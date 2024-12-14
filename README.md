@@ -1,8 +1,8 @@
-# co2champion
+# CO2champion
+## Infos
+### Django SuperUser: admin/admin
 
-## Django SuperUser: admin/admin
-
-## Setup:
+## Setup
 ### 1. Clone the Repository and Open it
 ### 2. Activate the predefined Virtual Environment
 ### 3. Install Pakages: npm install
