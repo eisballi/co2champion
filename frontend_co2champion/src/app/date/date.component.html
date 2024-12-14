@@ -1,0 +1,17 @@
+<mat-form-field>
+  <mat-label>{{ title }}</mat-label>
+  <input
+    matInput
+    [matDatepicker]="datepicker"
+    [placeholder]="placeholder"
+    [formControl]="date"
+  />
+  <mat-datepicker-toggle
+    matIconSuffix
+    [for]="datepicker"
+  ></mat-datepicker-toggle>
+  <mat-datepicker #datepicker></mat-datepicker>
+  @if (this.date.hasError("required")) {
+    <mat-error>Is required</mat-error>
+  }
+</mat-form-field>

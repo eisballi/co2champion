@@ -1,0 +1,83 @@
+<mat-form-field class="example-full-width">
+  <mat-label>Filter by movie title</mat-label>
+  <input
+    [formControl]="filterControl"
+    matInput
+    placeholder="Avengers Endgame"
+  />
+</mat-form-field>
+<table
+  mat-table
+  style="width: 100%"
+  [dataSource]="movies"
+  class="mat-elevation-z4"
+>
+  <!-- Title Column -->
+  <ng-container matColumnDef="title">
+    <th mat-header-cell *matHeaderCellDef>Title</th>
+    <td mat-cell *matCellDef="let element">{{ element.title }}</td>
+  </ng-container>
+
+  <!-- Released -->
+  <ng-container matColumnDef="released">
+    <th mat-header-cell *matHeaderCellDef>Released</th>
+    <td mat-cell *matCellDef="let element">
+      {{ element.released | date: "dd.MM.yyyy" }}
+    </td>
+  </ng-container>
+
+  <!-- Runtime -->
+  <ng-container matColumnDef="run_time">
+    <th mat-header-cell *matHeaderCellDef>Runtime</th>
+    <td mat-cell *matCellDef="let element">
+      {{ element.run_time }}
+    </td>
+  </ng-container>
+
+  <!-- Genres -->
+  <ng-container matColumnDef="genres">
+    <th mat-header-cell *matHeaderCellDef>Genres</th>
+    <td mat-cell *matCellDef="let element">
+      {{ getGenres(element) }}
+    </td>
+  </ng-container>
+
+  <!-- Black and white -->
+  <ng-container matColumnDef="black_and_white">
+    <th mat-header-cell *matHeaderCellDef>Black and White</th>
+    <td mat-cell *matCellDef="let element">
+      <mat-icon
+        aria-hidden="false"
+        aria-label="Example home icon"
+        [fontIcon]="element.black_and_white ? 'check' : 'close'"
+      ></mat-icon>
+    </td>
+  </ng-container>
+
+  <!-- Edit Column -->
+  <ng-container matColumnDef="edit">
+    <th mat-header-cell *matHeaderCellDef></th>
+    <td mat-cell *matCellDef="let element">
+      <button
+        mat-button
+        color="primary"
+        [routerLink]="'/movie-form/' + element.id"
+      >
+        Edit
+      </button>
+    </td>
+  </ng-container>
+
+  <!-- Delete Column -->
+  <ng-container matColumnDef="delete">
+    <th mat-header-cell *matHeaderCellDef></th>
+    <td mat-cell *matCellDef="let element">
+      <button mat-button color="warn" (click)="deleteMovie(element)">
+        Delete
+      </button>
+    </td></ng-container
+  >
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+</table>

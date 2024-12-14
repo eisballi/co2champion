@@ -1,0 +1,9 @@
+<mat-toolbar color="primary">
+  <button mat-button [matMenuTriggerFor]="movieMenu">Movies</button>
+  <mat-menu #movieMenu="matMenu">
+    <button mat-menu-item routerLink="movie-list">List movies</button>
+    <button mat-menu-item routerLink="movie-form">Create movie</button>
+  </mat-menu>
+</mat-toolbar>
+
+<router-outlet></router-outlet>
