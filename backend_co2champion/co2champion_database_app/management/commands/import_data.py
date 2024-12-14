@@ -1,9 +1,15 @@
 import csv
-import datetime
 import os
+import django
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'co2champion_backend.settings')
+django.setup()
+
 from django.core.management.base import BaseCommand, CommandError
 
 from co2champion_database_app import models
+
+
 
 class Command(BaseCommand):
     '''
@@ -51,7 +57,6 @@ class Command(BaseCommand):
                     description=description.strip(),
                     director=director,
                     year=year,
-                    released=datetime.datetime(year, 1, 1),
                     run_time=runtime,
                     rating=rating,
                     revenue=revenue
