@@ -9,4 +9,13 @@ export const routes: Routes = [
   { path: 'movie-form', component: MovieFormComponent },
   { path: 'movie-form/:id', component: MovieFormComponent },
   { path: 'dashboard', component: Co2championDashboardComponent },
+
+  { path: 'ranking', component: Co2championDashboardComponent },
+  { path: 'add-report', component: Co2championDashboardComponent },
+  { path: 'set-goal', component: Co2championDashboardComponent },
+  { path: 'settings', component: Co2championDashboardComponent },
+  { path: 'imprint', component: Co2championDashboardComponent },
+  { path: 'gdpr', component: Co2championDashboardComponent },
+  { path: 'log-out', component: Co2championDashboardComponent },
+  { path: 'edit-report/:id', component: EditReportFormComponent },
 ];

@@ -15,7 +15,7 @@ import datetime
 
 ######## CO2CHAMPION ########
 
-class PublicCompanyViewSet(viewsets.ReadOnlyModelViewSet):
+class RankViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API ViewSet, das alle Companies anzeigt, die von jedem gesehen werden können.
     """

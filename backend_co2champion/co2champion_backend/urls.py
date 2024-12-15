@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from co2champion_database_app.views import GenreViewSet, MovieViewSet, PersonViewSet
+from co2champion_database_app.views import CompanyViewSet, GenreViewSet, GoalViewSet, MovieViewSet, PersonViewSet, RankViewSet, ReportViewSet
 
 
 
@@ -15,6 +15,10 @@ router = DefaultRouter()
 router.register(r'genres', GenreViewSet, basename='genres')
 router.register(r'movies', MovieViewSet, basename='movies')
 router.register(r'persons', PersonViewSet, basename='persons')
+router.register(r'reports', ReportViewSet, basename='reports')
+router.register(r'company', CompanyViewSet, basename='company')
+router.register(r'goal', GoalViewSet, basename='goal')
+router.register(r'ranking', RankViewSet, basename='ranking')
 
 
 
