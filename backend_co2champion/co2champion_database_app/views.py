@@ -1,15 +1,128 @@
-import datetime
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.views import View
+from django.db import IntegrityError
 
 from rest_framework import viewsets, status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-from django.db import IntegrityError
-from rest_framework.permissions import IsAuthenticated
-from .serializers import MovieSerializer, GenreSerializer, PersonSerializer
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
+from .serializers import *
 from . import models
+
+import datetime
+
+######## CO2CHAMPION ########
+
+class PublicCompanyViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    API ViewSet, das alle Companies anzeigt, die von jedem gesehen werden können.
+    """
+    serializer_class = CompanySerializer
+    permission_classes = [AllowAny]  # Jeder darf lesen
+    queryset = models.Company.objects.all()
+
+    def get_queryset(self):
+        """
+        Liefert die Top 10 Firmen zurück
+        und fügt die eigene Firma als 11. hinzu, falls der Nutzer angemeldet ist
+        und sie nicht bereits unter den Top 10 ist.
+        """
+        # Hole die angeforderte Firma
+        company = self.queryset.filter(id=self.request.user.id)
+
+        # Hole die obersten 10 Firmen, geordnet nach dem Rang
+        # Angenommen das der Rank ausserhalb bestimmt wird, sonst hier den Algo-Aufruf
+        top_companies = models.Company.objects.all().order_by('Rank')[:10]
+
+        # 11te Company wenn User nicht unter Top 10
+        if self.user.is_authenticated:
+            if company not in top_companies:
+                top_companies.append(company)
+
+        return Response(CompanySerializer(top_companies, many=True).data)
+
+class CompanyViewSet(viewsets.ModelViewSet):
+    queryset = models.Company.objects.all()
+    serializer_class = CompanySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Nur die eigene Company abrufen
+        return self.queryset.filter(id=self.request.user.id)
+
+    def update(self, request, *args, **kwargs):
+        # Nur die eigene Company darf ihre Daten ändern
+        if kwargs['pk'] != str(request.user.id):
+            raise PermissionDenied("You are not allowed to edit this company.")
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        # Löschen wird generell nicht erlaubt
+        raise PermissionDenied("Deleting a company is not allowed.")
+
+
+class GoalViewSet(viewsets.ModelViewSet):
+    queryset = models.Goal.objects.all()
+    serializer_class = GoalSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Nur Goals der eigenen Company anzeigen
+        return self.queryset.filter(company=self.request.user.id)
+
+    def create(self, request, *args, **kwargs):
+        # Nur das eigene Goal darf erstellt werden
+        if request.data.get('company') != str(request.user.id):
+            raise PermissionDenied("You are not allowed to create a goal for another company.")
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        # Nur das eigene Goal darf geändert werden
+        instance = self.get_object()
+        if instance.company.id != request.user.id:
+            raise PermissionDenied("You are not allowed to update this goal.")
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        # Löschen wird erlaubt, aber nur für die eigene Company
+        instance = self.get_object()
+        if instance.company.id != request.user.id:
+            raise PermissionDenied("You are not allowed to delete this goal.")
+        return super().destroy(request, *args, **kwargs)
+
+
+class ReportViewSet(viewsets.ModelViewSet):
+    queryset = models.Report.objects.all()
+    serializer_class = ReportSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Nur Reports der eigenen Company anzeigen
+        return self.queryset.filter(company=self.request.user.id)
+
+    def create(self, request, *args, **kwargs):
+        # Nur das eigene Report darf erstellt werden
+        if request.data.get('company') != str(request.user.id):
+            raise PermissionDenied("You are not allowed to create a report for another company.")
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        # Nur das eigene Report darf geändert werden
+        instance = self.get_object()
+        if instance.company.id != request.user.id:
+            raise PermissionDenied("You are not allowed to update this report.")
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        # Löschen wird erlaubt, aber nur für die eigene Company
+        instance = self.get_object()
+        if instance.company.id != request.user.id:
+            raise PermissionDenied("You are not allowed to delete this report.")
+        return super().destroy(request, *args, **kwargs)
+
+######## UE ########
 
 class GenreViewSet(viewsets.ModelViewSet):
     '''
@@ -32,25 +145,25 @@ class GenreViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def retrieve(self, request, pk):
         '''
         Retrieve genre with primary key pk
         '''
-    
+
         # Retrieve the Genre instance based on the primary key from the URL
         instance = self.get_object()
         # Serialize the instance
         serializer = self.get_serializer(instance)
         # Return the serialized data in the response
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     def update(self, request, pk):
         '''
         Update genre with primary key pk
         '''
         if not(request.user.groups.filter(name="Content Administrators").exists()):
-            return Response({"errors":["You are not allowed to update genres"]}, status=status.HTTP_403_FORBIDDEN)        
+            return Response({"errors":["You are not allowed to update genres"]}, status=status.HTTP_403_FORBIDDEN)
         # Retrieve the instance using the ID from the URL
         instance = self.get_object()
         # Deserialize the data
@@ -68,10 +181,10 @@ class GenreViewSet(viewsets.ModelViewSet):
         '''
         # Get all Genre instances
         queryset = self.get_queryset()
-        
+
         # Serialize the queryset (list of Genre instances)
         serializer = self.get_serializer(queryset, many=True)
-        
+
         # Return the serialized data in the response
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -79,7 +192,7 @@ class GenreViewSet(viewsets.ModelViewSet):
         '''
         Delete genre with primary key pk
         '''
-        instance = self.get_object() 
+        instance = self.get_object()
         if request.user.groups.filter(name="Content Administrators").exists():
             self.perform_destroy(instance)
         else:
@@ -101,12 +214,12 @@ class PersonViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         if request.GET.get("search"):
             queryset = queryset.filter(name__icontains=request.GET.get("search"))
-        
+
         # Serialize the queryset (list of Genre instances)
         serializer = self.get_serializer(queryset, many=True)
-        
+
         # Return the serialized data in the response
-        return Response(serializer.data, status=status.HTTP_200_OK)    
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         '''
@@ -117,11 +230,11 @@ class PersonViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     #def destroy(self, request,pk):
     #    Uncomment, if you do not want to support the .destroy method
     #    Disallow destroy method
-    #    return Response(status=405)    
+    #    return Response(status=405)
 
     def destroy(self, request, pk):
         '''
@@ -130,7 +243,7 @@ class PersonViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         try:
             self.perform_destroy(instance)
-            return Response(status=status.HTTP_204_NO_CONTENT) 
+            return Response(status=status.HTTP_204_NO_CONTENT)
         except IntegrityError:
             return Response({"errors":["Person is still referenced by a movie. Delete the movie first."]},status=status.HTTP_409_CONFLICT)
 
@@ -183,7 +296,7 @@ class MovieViewSet(viewsets.ModelViewSet):
         limit = request.GET.get("limit",10)
         search_title = request.GET.get('title')
         search_value = request.GET.get("search[value]")
-        search_order = request.GET.get("order[0][dir]","asc")  
+        search_order = request.GET.get("order[0][dir]","asc")
         order_by = request.GET.get("order[0][column]","rank")
         # Build filtered movie list
         mv = models.Movie.objects.filter(visible=True)
@@ -199,7 +312,7 @@ class MovieViewSet(viewsets.ModelViewSet):
             # duplicate entries in our result set:
             mv = mv.filter(Q(title__icontains=search_title)).distinct()
         # do some mappings for ManyToManyField and Foreign Keys
-        # if we do provide a field in the order_by clause, order_by defaults 
+        # if we do provide a field in the order_by clause, order_by defaults
         # to the primary key for sorting
         if order_by == "director":
             order_by = "director__name"
@@ -222,7 +335,7 @@ class MovieViewSet(viewsets.ModelViewSet):
                 self.get_movie_response(movie, is_content_administrator)
             )
         return Response(movie_list)
-    
+
     def update(self, request, pk):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data)
@@ -239,7 +352,7 @@ class MovieViewSet(viewsets.ModelViewSet):
         movie = get_object_or_404(models.Movie, pk=pk)
         is_content_administrator = request.user.groups.filter(name="Content Administrators").exists()
         return Response(self.get_movie_response(movie, is_content_administrator), status=200)
-    
+
 
     def get_movie_response(self, movie, is_content_administrator):
         serialized_genres= GenreSerializer(movie.genres.all(), many=True)
