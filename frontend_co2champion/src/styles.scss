@@ -1,11 +1,15 @@
 @import "../node_modules/css-star-rating/scss/star-rating.scss";
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fira+Code:wght@600&display=swap');
 /* You can add global styles to this file, and also import other style files */
 
 html,
+
 body {
   height: 100%;
 }
 body {
+  background-color: #c5ffc5; /* Ersetze mit deiner gewünschten Farbe */
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: "Fira Code", monospace;
 }
+

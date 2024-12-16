@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ReportModel, Page } from '../interfaces/report.model';
+import { ReportModel } from '../interfaces/report.model';
 
 @Injectable({
   providedIn: 'root',
@@ -9,22 +9,22 @@ export class ReportService {
   constructor(private http: HttpClient) {}
 
   getReports(queryParams?: Record<string, string>) {
-    return this.http.get<Page<ReportModel>>('/api/reports/', { params: queryParams });
+    return this.http.get<ReportModel[]>('/api/reports/', { params: queryParams });
   }
 
   getReport(id: number) {
-    return this.http.get<ReportModel>('/api/report/' + id + '/');
+    return this.http.get<ReportModel>('/api/reports/' + id + '/');
   }
 
   create(report: ReportModel) {
-    return this.http.post('/api/report/', report);
+    return this.http.post('/api/reports/', report);
   }
 
   update(report: ReportModel, id: number) {
-    return this.http.put(`/api/report/${id}/`, report);
+    return this.http.put(`/api/reports/${id}/`, report);
   }
 
   delete(id: number) {
-    return this.http.delete(`/api/report/${id}/`);
+    return this.http.delete(`/api/reports/${id}/`);
   }
 }

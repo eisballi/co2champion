@@ -1,1 +1,66 @@
-<p>co2champion-edit-report works!</p>
+<form
+  [formGroup]="reportFormGroup"
+  (ngSubmit)="saveReport()"
+  class="report-form__form"
+>
+  <mat-form-field>
+    <mat-label>Title</mat-label>
+    <input matInput type="text" placeholder="Title" formControlName="title" />
+    @if (reportFormGroup.controls["title"].hasError("required")) {
+      <mat-error> Title is required </mat-error>
+    }
+    @if (reportFormGroup.controls["title"].hasError("badWord")) {
+      <mat-error> Movie title contains "bad word" </mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Description</mat-label>
+    <input
+      matInput
+      type="text"
+      placeholder="Description"
+      formControlName="description"
+    />
+    @if (reportFormGroup.controls["description"].hasError("required")) {
+      <mat-error> Description is required </mat-error>
+    }
+  </mat-form-field>
+
+  <app-date
+    placeholder="Date"
+    formControlName="date"
+    [title]="'Date'"
+    [required]="true"
+  >
+  </app-date>
+
+  <mat-form-field>
+    <mat-label>Reduced Emission</mat-label>
+    <input
+      matInput
+      type="number"
+      placeholder="0.00"
+      formControlName="reduced_emissions"
+    />
+    @if (reportFormGroup.controls["reduced_emissions"].hasError("max")) {
+      <mat-error> Reduced Emission is too high </mat-error>
+    }
+  </mat-form-field>
+
+  <br/>
+
+  <mat-card-actions align="start">
+    <button
+      mat-raised-button
+      color="primary"
+      [disabled]="!reportFormGroup.valid"
+    >
+      @if (!reportId) {
+        <span>Create</span>
+      } @else {
+        <span>Update</span>
+      }
+    </button>
+  </mat-card-actions>
+</form>

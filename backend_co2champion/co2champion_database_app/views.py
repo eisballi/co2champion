@@ -96,11 +96,12 @@ class GoalViewSet(viewsets.ModelViewSet):
 class ReportViewSet(viewsets.ModelViewSet):
     queryset = models.Report.objects.all()
     serializer_class = ReportSerializer
-    permission_classes = [IsAuthenticated]
+    #TODO ADD: #permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         # Nur Reports der eigenen Company anzeigen
-        return self.queryset.filter(company=self.request.user.id)
+        #TODO ADD:  return self.queryset.filter(company=self.request.user.id)
+        return models.Report.objects.all()
 
     def create(self, request, *args, **kwargs):
         # Nur das eigene Report darf erstellt werden
@@ -111,8 +112,8 @@ class ReportViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         # Nur das eigene Report darf geändert werden
         instance = self.get_object()
-        if instance.company.id != request.user.id:
-            raise PermissionDenied("You are not allowed to update this report.")
+        #TODO ADD: if instance.company.id != request.user.id:
+            #TODO ADD: raise PermissionDenied("You are not allowed to update this report.")
         return super().update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):

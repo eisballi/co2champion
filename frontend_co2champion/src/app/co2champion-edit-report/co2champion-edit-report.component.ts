@@ -1,12 +1,89 @@
 import { Component } from '@angular/core';
+import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { ActivatedRoute } from '@angular/router';
+import { ReportService } from '../services/report.service'; // Dein Service zum Abrufen und Bearbeiten von Reports
+import { DateComponent } from '../date/date.component';
 
 @Component({
   selector: 'app-co2champion-edit-report',
   standalone: true,
-  imports: [],
+  imports: [
+    MatButtonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatCardModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatCheckboxModule,
+    DateComponent
+  ],
   templateUrl: './co2champion-edit-report.component.html',
-  styleUrl: './co2champion-edit-report.component.scss'
+  styleUrls: ['./co2champion-edit-report.component.scss'],
 })
 export class Co2championEditReportComponent {
+  reportFormGroup: FormGroup;
+  reportId: number | undefined = undefined;
 
+  constructor(
+    private reportService: ReportService,
+    private route: ActivatedRoute
+  ) {
+    this.reportFormGroup = new FormGroup({
+      id: new FormControl(null),
+      title: new FormControl('', [Validators.required, Validators.maxLength(200), this.badWordValidator(),]),
+      description: new FormControl('', [Validators.required, Validators.maxLength(800), this.badWordValidator(),]),
+      date: new FormControl(new Date(), Validators.required),
+      reduced_emissions: new FormControl(null, [Validators.required, Validators.max(999999.99), this.badWordValidator(),]),
+      company: new FormControl(null),
+    });
+  }
+
+  ngOnInit(): void {
+
+    this.reportId = Number(this.route.snapshot.paramMap.get('id'));
+
+    if (this.reportId) {
+      this.reportService.getReport(this.reportId).subscribe((report) => {
+        this.reportFormGroup.patchValue({
+          id: report.id,
+          title: report.title,
+          description: report.description,
+          date: report.date,
+          reduced_emissions: report.reduced_emissions,
+          company: 1 //TODO: CHANGE
+        });
+      });
+    }
+  }
+
+  saveReport(): void {
+    if (this.reportFormGroup.valid) {
+      const reportData = this.reportFormGroup.value;
+
+      if (this.reportId) {
+        this.reportService.update(reportData, this.reportId).subscribe(() => {
+          alert('Report updated successfully!');
+        });
+      } else {
+        this.reportService.create(reportData).subscribe(() => {
+          alert('Report created successfully!');
+        });
+      }
+    }
+  }
+
+  badWordValidator(): ValidatorFn {
+    return (control: AbstractControl) => {
+      const forbidden = /bad word/.test(control.value);
+      return forbidden ? { badWord: { value: control.value } } : null;
+    };
+  }
 }
