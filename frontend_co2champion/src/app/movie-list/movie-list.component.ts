@@ -17,6 +17,7 @@ import {
 } from 'rxjs';
 import { Movie } from '../interfaces/movie.model';
 import { MovieService } from '../services/movie.service';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-movie-list',
@@ -49,7 +50,7 @@ export class MovieListComponent implements OnInit, OnDestroy {
     'delete',
   ];
 
-  constructor(private movieService: MovieService) {}
+  constructor(private movieService: MovieService, public userService: UserService) {}
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();

@@ -72,9 +72,11 @@
   <ng-container matColumnDef="delete">
     <th mat-header-cell *matHeaderCellDef></th>
     <td mat-cell *matCellDef="let element">
-      <button mat-button color="warn" (click)="deleteMovie(element)">
+      @if (userService.hasPermission("yamod.delete_movie")) {
+        <button mat-button color="warn" (click)="deleteMovie(element)">
         Delete
-      </button>
+        </button>
+        }       
     </td></ng-container
   >
 
