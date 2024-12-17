@@ -9,7 +9,9 @@
   <span class="spacer"></span>
   <button mat-button routerLink="/imprint"><mat-icon>info</mat-icon>Imprint</button>
   <button mat-button routerLink="/gdpr"><mat-icon>security</mat-icon>GDPR</button>
-  <button mat-button routerLink="/log-out"><mat-icon>done</mat-icon>Log Out</button>
-</mat-toolbar>
+  @if (userService.isLoggedInSignal()) {
+    <button mat-button (click)="logout()"><mat-icon>done</mat-icon>Log Out</button>
+  }
+  </mat-toolbar>
 
 <router-outlet></router-outlet>

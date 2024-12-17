@@ -48,7 +48,7 @@ import { ProgressChartComponent } from '../dashboard-progress-pie-chart/progress
     CommonModule,
     NgxEchartsDirective,
     ProgressChartComponent,
-    DashboardLineChartComponent
+    DashboardLineChartComponent,
   ],
   templateUrl: './co2champion-dashboard.component.html',
   styleUrl: './co2champion-dashboard.component.scss',

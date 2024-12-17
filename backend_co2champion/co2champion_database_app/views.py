@@ -96,12 +96,12 @@ class GoalViewSet(viewsets.ModelViewSet):
 class ReportViewSet(viewsets.ModelViewSet):
     queryset = models.Report.objects.all()
     serializer_class = ReportSerializer
-    #TODO ADD: #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         # Nur Reports der eigenen Company anzeigen
-        #TODO ADD:  return self.queryset.filter(company=self.request.user.id)
-        return models.Report.objects.all()
+        return self.queryset.filter(company=self.request.user.id)
+        #return models.Report.objects.all()
 
     def create(self, request, *args, **kwargs):
         # Nur das eigene Report darf erstellt werden
