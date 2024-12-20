@@ -28,14 +28,15 @@ class PersonSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class MovieSerializer(serializers.ModelSerializer):
-    
+
     class Meta:
         model = models.Movie
-        fields = '__all__'  
+        fields = '__all__'
 
 ######## CO2CHAMPION ########
 
 class CompanySerializer(serializers.ModelSerializer):
+
     class Meta:
         model = models.Company
         fields = '__all__'
@@ -54,5 +55,13 @@ class ReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Report
+        fields = '__all__'
+        read_only_fields = ['id']
+
+class RankHistorySerializer(serializers.ModelSerializer):
+    company = serializers.PrimaryKeyRelatedField(queryset=models.Company.objects.all())
+
+    class Meta:
+        model = models.RankHistory
         fields = '__all__'
         read_only_fields = ['id']

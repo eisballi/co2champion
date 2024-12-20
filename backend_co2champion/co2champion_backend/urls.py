@@ -8,7 +8,7 @@ from rest_framework_simplejwt.views import (
 )
 
 from co2champion_database_app.serializers import MyTokenObtainPairView
-from co2champion_database_app.views import CompanyViewSet, GenreViewSet, GoalViewSet, MovieViewSet, PersonViewSet, RankViewSet, ReportViewSet
+from co2champion_database_app.views import CompanyViewSet, GenreViewSet, GoalViewSet, MovieViewSet, PersonViewSet, RankHistoryViewSet, RankViewSet, ReportViewSet
 
 
 
@@ -20,6 +20,7 @@ router.register(r'reports', ReportViewSet, basename='reports')
 router.register(r'company', CompanyViewSet, basename='company')
 router.register(r'goal', GoalViewSet, basename='goal')
 router.register(r'ranking', RankViewSet, basename='ranking')
+router.register(r'rank-history', RankHistoryViewSet, basename='rank-history')
 
 
 

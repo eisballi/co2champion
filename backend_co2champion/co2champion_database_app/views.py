@@ -29,19 +29,26 @@ class RankViewSet(viewsets.ReadOnlyModelViewSet):
         und fügt die eigene Firma als 11. hinzu, falls der Nutzer angemeldet ist
         und sie nicht bereits unter den Top 10 ist.
         """
-        # Hole die angeforderte Firma
-        company = self.queryset.filter(id=self.request.user.id)
 
         # Hole die obersten 10 Firmen, geordnet nach dem Rang
         # Angenommen das der Rank ausserhalb bestimmt wird, sonst hier den Algo-Aufruf
-        top_companies = models.Company.objects.all().order_by('Rank')[:10]
+        top_companies = models.Company.objects.all().order_by('current_rank')[:10]
 
         # 11te Company wenn User nicht unter Top 10
         if self.user.is_authenticated:
+            company = self.queryset.filter(id=self.request.user.id)
             if company not in top_companies:
                 top_companies.append(company)
 
         return Response(CompanySerializer(top_companies, many=True).data)
+
+class RankHistoryViewSet(viewsets.ModelViewSet):
+    queryset = models.RankHistory.objects.all()
+    serializer_class = RankHistorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(company=self.request.user.id)
 
 class CompanyViewSet(viewsets.ModelViewSet):
     queryset = models.Company.objects.all()
@@ -112,8 +119,8 @@ class ReportViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         # Nur das eigene Report darf geändert werden
         instance = self.get_object()
-        #TODO ADD: if instance.company.id != request.user.id:
-            #TODO ADD: raise PermissionDenied("You are not allowed to update this report.")
+        if instance.company.id != request.user.id:
+            raise PermissionDenied("You are not allowed to update this report.")
         return super().update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
@@ -122,6 +129,7 @@ class ReportViewSet(viewsets.ModelViewSet):
         if instance.company.id != request.user.id:
             raise PermissionDenied("You are not allowed to delete this report.")
         return super().destroy(request, *args, **kwargs)
+
 
 ######## UE ########
 

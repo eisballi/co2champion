@@ -32,7 +32,11 @@ import { DashboardLineChartComponent } from '../dashboard-progress-chart/dashboa
 import { ProgressChartComponent } from '../dashboard-progress-pie-chart/progress-chart.component';
 import { GoalService } from '../services/goal.service';
 import { GoalModel } from '../interfaces/goal.model';
-import { EmissionsTracker } from './EmissionTracker';
+import { ChartHandler } from './ChartHandler';
+import { MonthlyReportsChartComponent } from '../monthly-reports-chart/monthly-reports-chart.component';
+import { DashboardRankLineChartComponent } from '../dashboard-rank-progress-chart/dashboard-rank-progress-chart.component';
+import { RankHistoryService } from '../services/rank-history.service';
+import { RankHistoryModel } from '../interfaces/rank-history.model';
 
 
 @Component({
@@ -53,6 +57,8 @@ import { EmissionsTracker } from './EmissionTracker';
     NgxEchartsDirective,
     ProgressChartComponent,
     DashboardLineChartComponent,
+    MonthlyReportsChartComponent,
+    DashboardRankLineChartComponent
   ],
   templateUrl: './co2champion-dashboard.component.html',
   styleUrl: './co2champion-dashboard.component.scss',
@@ -61,55 +67,85 @@ import { EmissionsTracker } from './EmissionTracker';
   ]
 })
 export class Co2championDashboardComponent implements OnInit, OnDestroy {
-  subscription: Subscription | undefined;
-
   // Reports
-  reports: ReportModel[] = [];
   reportsDataSource = new MatTableDataSource<ReportModel>([]);
   reportHistoryColumns = ['title', 'description', 'date', 'reduced_emissions', 'edit', 'delete'];
+  @ViewChild(MatPaginator) paginator!: MatPaginator; // Report Table Paginator
   // Goals
   companyGoal: GoalModel | undefined;
-  // Others
-  @ViewChild(MatPaginator) paginator!: MatPaginator; // ViewChild für Paginator
+  // RankHistory
+  rankHistoryDataSource = new MatTableDataSource<RankHistoryModel>([]);
 
+  // CHARTS Variables + Default Values
+  // - Progress Timeline
+  charts_ProgressTimeline_Dates       = ['?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?'];
+  charts_ProgressTimeline_Reductions  = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  // - Overall Progress
+  charts_OverallProgress = 0;
+  // - Reports vs. Reduced Emissions
+  charts_ReportsVsReduction_Dates             = ['?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?'];
+  charts_ReportsVsReduction_ReportsCounts     = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  charts_ReportsVsReduction_MonthlyReduction  = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  // - RankHistory
+  charts_RankHistory_Dates = ['?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?'];
+  charts_RankHistory_Ranks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   constructor(
     private reportService: ReportService,
-    private goalService: GoalService) { }
-
-  // CHARTS
-
-  xAxisData = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  seriesData = [0, 50, 100, 150, 100, 150, 200, 0, 50, 100, 150, 100, 150, 200];
-  // Pie Chart
-  pieChartCurrentProgress = 2;
-  max = 100;
-
+    private goalService: GoalService,
+    private rankHistoryService: RankHistoryService) { }
 
   ngOnInit(): void {
     this.reportService.getReports().subscribe((reports) => {
       this.reportsDataSource.data = reports;
       this.reportsDataSource.paginator = this.paginator;
-      this.updateChartData();
+      this.updateProgressTimeLineChartData();
+      this.updateReportsVsEmissionsChartData();
     });
 
     this.goalService.getGoal().subscribe((response) => {
       this.companyGoal = response[0];
-      this.pieChartCurrentProgress = this.getCurrentPieChartProgress();
-      this.updateChartData();
+      this.updateOverallProgress();
+      this.updateProgressTimeLineChartData();
+      this.updateReportsVsEmissionsChartData();
+    });
+
+    this.rankHistoryService.getRankHistory().subscribe((response) => {
+      this.rankHistoryDataSource.data = response;
+      this.updateRankLineChartData();
     });
   }
 
-  private updateChartData(): void {
+  private updateProgressTimeLineChartData(): void {
     if (this.companyGoal) {
-      var result = EmissionsTracker.getEmissionsProgress(this.companyGoal, this.reportsDataSource.data);
-      this.xAxisData = result.xAxisData;
-      this.seriesData = result.seriesData;
+      var result = ChartHandler.getEmissionsProgress(this.companyGoal, this.reportsDataSource.data);
+      this.charts_ProgressTimeline_Dates = [...result.xAxisData];
+      this.charts_ProgressTimeline_Reductions = [...result.seriesData];
+    }
+  }
+
+  private updateRankLineChartData(): void {
+    const result = ChartHandler.getRankHistoryData(this.rankHistoryDataSource.data);
+    this.charts_RankHistory_Dates = result.xAxisRankData;
+    this.charts_RankHistory_Ranks = result.seriesRankData;
+  }
+
+  private updateReportsVsEmissionsChartData(): void {
+    const result = ChartHandler.getReportsVsEmissionsData(this.reportsDataSource.data);
+    this.charts_ReportsVsReduction_Dates = [...result.months];
+    this.charts_ReportsVsReduction_ReportsCounts = [...result.reportsCount];
+    this.charts_ReportsVsReduction_MonthlyReduction = [...result.monthlyEmissions];
+  }
+
+  updateOverallProgress() {
+    if (!this.companyGoal || !this.companyGoal.start_emissions || !this.companyGoal.target_emissions || !this.reportsDataSource.data) {
+      this.charts_OverallProgress = 0;
+    } else {
+      this.charts_OverallProgress = ChartHandler.getCurrentPieChartProgress(this.companyGoal, this.reportsDataSource.data)
     }
   }
 
   ngOnDestroy(): void {
-    // Falls du zusätzliche Subscriptions hast
   }
 
   deleteReport(id: number) {
@@ -119,12 +155,4 @@ export class Co2championDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  getCurrentPieChartProgress(): number {
-    if (!this.companyGoal || !this.companyGoal.current_emissions || !this.companyGoal.target_emissions) {
-      return 0;
-    }
-
-    // Berechnung des Fortschritts in Prozent
-    return ((this.companyGoal.target_emissions / this.companyGoal.current_emissions) * 100);
-  }
 }

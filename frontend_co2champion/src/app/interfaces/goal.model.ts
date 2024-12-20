@@ -7,7 +7,7 @@
 export interface GoalModel {
   id: number;
   company: number
-  current_emissions: number;
+  start_emissions: number;
   target_emissions: number;
   deadline: Date;
   start_date: Date;

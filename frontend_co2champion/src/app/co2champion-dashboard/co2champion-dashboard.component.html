@@ -1,95 +1,105 @@
 <div>
   <div class="row justify-content-md-center">
     <div class="col-md-auto text-center">
-      <br><br><h3>Welcome to Your Dashboard!</h3><br>
+      <br><br>
+      <h3>Welcome to Your Dashboard!</h3><br>
     </div>
   </div>
   <div class="row">
     <div class="col-1"></div>
-    <div class="col-6">
+    <div class="col-7">
       <h4>Progress Timeline</h4>
-      <app-line-chart [xAxisData]="xAxisData" [seriesData]="seriesData"></app-line-chart>
+      <app-line-chart [xAxisData]="charts_ProgressTimeline_Dates" [seriesData]="charts_ProgressTimeline_Reductions"></app-line-chart>
     </div>
-    <div class="col-2">
+    <div class="col-3">
       <h4>Overall Progress</h4>
-      <app-progress-chart [value]="pieChartCurrentProgress" [max]="max"></app-progress-chart>
-    </div>
-    <div class="col-2">
-      <h4>Global Rank</h4>
-      <app-line-chart [xAxisData]="xAxisData" [seriesData]="seriesData"></app-line-chart>
+      <app-progress-chart [value]="charts_OverallProgress" [max]="100"></app-progress-chart>
     </div>
     <div class="col-1"></div>
-    <div class="row">
-      <br><br>
-    </div>
   </div>
+  <br>
+  <div class="row">
+    <div class="col-1"></div>
+    <div class="col-5">
+      <h4>Global Rank</h4>
+      <app-rank-line-chart [xAxisRankData]="charts_RankHistory_Dates" [seriesRankData]="charts_RankHistory_Ranks"></app-rank-line-chart>
+    </div>
+    <div class="col-5">
+      <h4>Reports vs. Reduced Emissions</h4>
+      <app-monthly-reports-chart [monthlyReportsChartMonths]="charts_ReportsVsReduction_Dates" [monthlyReportsChartReportsCount]="charts_ReportsVsReduction_ReportsCounts" [monthlyReportsChartMonthlyEmissions]="charts_ReportsVsReduction_MonthlyReduction"></app-monthly-reports-chart>
+    </div>
+    <div class="col-1"></div>
+  </div>
+</div>
 
+<br><br>
 
-  <div>
-    <div class="row">
-      <div class="row justify-content-md-center">
-        <div class="col-md-auto text-center">
-          <br><h3>CO2 Report History</h3><br>
-        </div>
+<div>
+  <div class="row">
+    <div class="row justify-content-md-center">
+      <div class="col-md-auto text-center">
+        <br>
+        <h3>CO2 Report History</h3><br>
       </div>
     </div>
-    <div class="row">
-      <div class="col-1"></div>
-      <div class="col-10">
-        <div class="mat-elevation-z8">
-          <table mat-table [dataSource]="reportsDataSource" class="mat-elevation-z8">
-            <!-- Title Column -->
-            <ng-container matColumnDef="title">
-              <th mat-header-cell *matHeaderCellDef>Title</th>
-              <td mat-cell *matCellDef="let element">{{ element.title }}</td>
-            </ng-container>
-
-            <!-- Description Column -->
-            <ng-container matColumnDef="description">
-              <th mat-header-cell *matHeaderCellDef>Description</th>
-              <td mat-cell *matCellDef="let element">{{ element.description }}</td>
-            </ng-container>
-
-            <!-- Date Column -->
-            <ng-container matColumnDef="date">
-              <th mat-header-cell *matHeaderCellDef>Date</th>
-              <td mat-cell *matCellDef="let element">{{ element.date | date: 'dd.MM.yyyy' }}</td>
-            </ng-container>
-
-            <!-- Emissions Reduced Column -->
-            <ng-container matColumnDef="reduced_emissions">
-              <th mat-header-cell *matHeaderCellDef>Emissions</th>
-              <td mat-cell *matCellDef="let element">-{{ element.reduced_emissions }}</td>
-            </ng-container>
-
-            <!-- Edit Column -->
-            <ng-container matColumnDef="edit">
-              <th mat-header-cell *matHeaderCellDef></th>
-              <td mat-cell *matCellDef="let element">
-                <button mat-button color="primary" [routerLink]="'/edit-report/' + element.id">
-                  Edit
-                </button>
-              </td>
-            </ng-container>
-
-            <!-- Delete Column -->
-            <ng-container matColumnDef="delete">
-              <th mat-header-cell *matHeaderCellDef></th>
-              <td mat-cell *matCellDef="let element">
-                <button mat-button color="warn" (click)="deleteReport(element.id)">Delete</button>
-              </td>
-            </ng-container>
-
-            <!-- Header & Row Definitions -->
-            <tr mat-header-row *matHeaderRowDef="reportHistoryColumns; sticky: true"></tr>
-            <tr mat-row *matRowDef="let row; columns: reportHistoryColumns;"></tr>
-          </table>
-
-          <!-- Paginator -->
-          <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
-        </div>
-      </div>
-      <div class="col-1"></div>
-    </div>
   </div>
-  <br><br><br><br><br><br>
+  <div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+      <div class="mat-elevation-z8">
+        <table mat-table [dataSource]="reportsDataSource" class="mat-elevation-z8">
+          <!-- Title Column -->
+          <ng-container matColumnDef="title">
+            <th mat-header-cell *matHeaderCellDef>Title</th>
+            <td mat-cell *matCellDef="let element">{{ element.title }}</td>
+          </ng-container>
+
+          <!-- Description Column -->
+          <ng-container matColumnDef="description">
+            <th mat-header-cell *matHeaderCellDef>Description</th>
+            <td mat-cell *matCellDef="let element">{{ element.description }}</td>
+          </ng-container>
+
+          <!-- Date Column -->
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let element">{{ element.date | date: 'dd.MM.yyyy' }}</td>
+          </ng-container>
+
+          <!-- Emissions Reduced Column -->
+          <ng-container matColumnDef="reduced_emissions">
+            <th mat-header-cell *matHeaderCellDef>Emissions</th>
+            <td mat-cell *matCellDef="let element">-{{ element.reduced_emissions }}</td>
+          </ng-container>
+
+          <!-- Edit Column -->
+          <ng-container matColumnDef="edit">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let element">
+              <button mat-button color="primary" [routerLink]="'/edit-report/' + element.id">
+                Edit
+              </button>
+            </td>
+          </ng-container>
+
+          <!-- Delete Column -->
+          <ng-container matColumnDef="delete">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let element">
+              <button mat-button color="warn" (click)="deleteReport(element.id)">Delete</button>
+            </td>
+          </ng-container>
+
+          <!-- Header & Row Definitions -->
+          <tr mat-header-row *matHeaderRowDef="reportHistoryColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: reportHistoryColumns;"></tr>
+        </table>
+
+        <!-- Paginator -->
+        <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+      </div>
+    </div>
+    <div class="col-1"></div>
+  </div>
+  <br><br>
+</div>
