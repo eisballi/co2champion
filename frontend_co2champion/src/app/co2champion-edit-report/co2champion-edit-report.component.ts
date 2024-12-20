@@ -38,10 +38,10 @@ export class Co2championEditReportComponent {
   ) {
     this.reportFormGroup = new FormGroup({
       id: new FormControl(null),
-      title: new FormControl('', [Validators.required, Validators.maxLength(200), this.badWordValidator(),]),
-      description: new FormControl('', [Validators.required, Validators.maxLength(800), this.badWordValidator(),]),
-      date: new FormControl(new Date(), Validators.required),
-      reduced_emissions: new FormControl(null, [Validators.required, Validators.max(999999.99), this.badWordValidator(),]),
+      title: new FormControl('', [Validators.required,  Validators.maxLength(200),]),
+      description: new FormControl('', [Validators.required, Validators.maxLength(800),]),
+      date: new FormControl(new Date(), Validators.required, ),
+      reduced_emissions: new FormControl(null, [Validators.required, Validators.max(999999.99), ]),
       company: new FormControl(null),
     });
   }
@@ -58,7 +58,7 @@ export class Co2championEditReportComponent {
           description: report.description,
           date: report.date,
           reduced_emissions: report.reduced_emissions,
-          company: 1 //TODO: CHANGE
+          company: report.company
         });
       });
     }
@@ -78,12 +78,5 @@ export class Co2championEditReportComponent {
         });
       }
     }
-  }
-
-  badWordValidator(): ValidatorFn {
-    return (control: AbstractControl) => {
-      const forbidden = /bad word/.test(control.value);
-      return forbidden ? { badWord: { value: control.value } } : null;
-    };
   }
 }

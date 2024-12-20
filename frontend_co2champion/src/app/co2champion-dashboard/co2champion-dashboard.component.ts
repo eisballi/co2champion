@@ -9,6 +9,7 @@ import { RouterLink } from '@angular/router';
 import {
   debounceTime,
   distinctUntilChanged,
+  empty,
   map,
   Observable,
   startWith,
@@ -29,6 +30,9 @@ echarts.use([BarChart, GridComponent, CanvasRenderer]);
 import type { EChartsCoreOption } from 'echarts/core';
 import { DashboardLineChartComponent } from '../dashboard-progress-chart/dashboard-progress-chart.component';
 import { ProgressChartComponent } from '../dashboard-progress-pie-chart/progress-chart.component';
+import { GoalService } from '../services/goal.service';
+import { GoalModel } from '../interfaces/goal.model';
+import { EmissionsTracker } from './EmissionTracker';
 
 
 @Component({
@@ -57,27 +61,51 @@ import { ProgressChartComponent } from '../dashboard-progress-pie-chart/progress
   ]
 })
 export class Co2championDashboardComponent implements OnInit, OnDestroy {
-  reports: ReportModel[] = [];
   subscription: Subscription | undefined;
-  reports$: Observable<Report[]> | undefined;
-  dataSource = new MatTableDataSource<ReportModel>([]);
-  @ViewChild(MatPaginator) paginator!: MatPaginator; // ViewChild für Paginator
+
+  // Reports
+  reports: ReportModel[] = [];
+  reportsDataSource = new MatTableDataSource<ReportModel>([]);
   reportHistoryColumns = ['title', 'description', 'date', 'reduced_emissions', 'edit', 'delete'];
-  constructor(private reportService: ReportService) { }
+  // Goals
+  companyGoal: GoalModel | undefined;
+  // Others
+  @ViewChild(MatPaginator) paginator!: MatPaginator; // ViewChild für Paginator
+
+
+  constructor(
+    private reportService: ReportService,
+    private goalService: GoalService) { }
 
   // CHARTS
-  chart1data!: EChartsCoreOption;
-  xAxisData = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  seriesData = [150, 230, 224, 218, 135, 147, 260];
-  value = 35; // Aktueller Wert (z. B. Geschwindigkeit)
-  max = 100; // Maximalwert (z. B. km/h)
+
+  xAxisData = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  seriesData = [0, 50, 100, 150, 100, 150, 200, 0, 50, 100, 150, 100, 150, 200];
+  // Pie Chart
+  pieChartCurrentProgress = 2;
+  max = 100;
 
 
   ngOnInit(): void {
     this.reportService.getReports().subscribe((reports) => {
-      this.dataSource.data = reports; // DataSource aktualisieren
-      this.dataSource.paginator = this.paginator; // Paginator an DataSource binden
+      this.reportsDataSource.data = reports;
+      this.reportsDataSource.paginator = this.paginator;
+      this.updateChartData();
     });
+
+    this.goalService.getGoal().subscribe((response) => {
+      this.companyGoal = response[0];
+      this.pieChartCurrentProgress = this.getCurrentPieChartProgress();
+      this.updateChartData();
+    });
+  }
+
+  private updateChartData(): void {
+    if (this.companyGoal) {
+      var result = EmissionsTracker.getEmissionsProgress(this.companyGoal, this.reportsDataSource.data);
+      this.xAxisData = result.xAxisData;
+      this.seriesData = result.seriesData;
+    }
   }
 
   ngOnDestroy(): void {
@@ -89,5 +117,14 @@ export class Co2championDashboardComponent implements OnInit, OnDestroy {
       alert('Report deleted');
       this.ngOnInit();
     });
+  }
+
+  getCurrentPieChartProgress(): number {
+    if (!this.companyGoal || !this.companyGoal.current_emissions || !this.companyGoal.target_emissions) {
+      return 0;
+    }
+
+    // Berechnung des Fortschritts in Prozent
+    return ((this.companyGoal.target_emissions / this.companyGoal.current_emissions) * 100);
   }
 }

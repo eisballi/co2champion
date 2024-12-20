@@ -1,6 +1,12 @@
 .report-form__form {
     display: flex;
     flex-direction: column;
-    width: 300px;
-    margin: 20px auto;
+    width: 400px;
+    margin: 10px auto;
+  }
+
+  .error-message {
+    color: #d32f2f;
+    font-weight: bold;
+    margin-bottom: 1rem;
   }
