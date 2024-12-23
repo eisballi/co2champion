@@ -3,13 +3,13 @@ import * as echarts from 'echarts';
 
 @Component({
   selector: 'app-line-chart',
-  standalone: true, // Standalone-Komponente
+  standalone: true,
   templateUrl: './dashboard-progress-chart.component.html',
   styleUrls: ['./dashboard-progress-chart.component.scss'],
 })
 export class DashboardLineChartComponent implements OnInit {
-  @Input() xAxisData: string[] = []; // X-Achse-Daten (z. B. ['Mon', 'Tue', ...])
-  @Input() seriesData: number[] = []; // Werte für die Serie (z. B. [150, 230, ...])
+  @Input() xAxisData: string[] = [];
+  @Input() seriesData: number[] = [];
 
   constructor() {}
 
@@ -19,7 +19,7 @@ export class DashboardLineChartComponent implements OnInit {
 
   ngOnChanges(changes: SimpleChanges): void {
     if ((changes['xAxisData'] || changes['seriesData'])) {
-      this.initChart(); // Aktualisiere das Diagramm bei Änderungen
+      this.initChart();
     }
   }
 
@@ -30,7 +30,7 @@ export class DashboardLineChartComponent implements OnInit {
     const option: echarts.EChartsOption = {
       xAxis: {
         type: 'category',
-        data: this.xAxisData, // Initiale X-Achse-Daten
+        data: this.xAxisData,
       },
       yAxis: {
         type: 'value',
@@ -60,12 +60,12 @@ export class DashboardLineChartComponent implements OnInit {
       },
       series: [
         {
-          data: this.seriesData, // Initiale Serien-Daten
+          data: this.seriesData,
           type: 'line',
         },
       ],
     };
 
-    myChart.setOption(option,); // Initialisiere das Diagramm
+    myChart.setOption(option,);
   }
 }

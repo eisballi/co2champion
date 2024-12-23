@@ -8,8 +8,8 @@ import * as echarts from 'echarts';
   styleUrls: ['./dashboard-rank-progress-chart.component.scss'],
 })
 export class DashboardRankLineChartComponent implements OnInit {
-  @Input() xAxisRankData: string[] = []; // X-Achse-Daten (z. B. ['Mon', 'Tue', ...])
-  @Input() seriesRankData: number[] = []; // Werte für die Serie (z. B. [150, 230, ...])
+  @Input() xAxisRankData: string[] = [];
+  @Input() seriesRankData: number[] = [];
 
   constructor() {}
 
@@ -19,7 +19,7 @@ export class DashboardRankLineChartComponent implements OnInit {
 
   ngOnChanges(changes: SimpleChanges): void {
     if ((changes['xAxisRankData'] || changes['seriesRankData'])) {
-      this.initChart(); // Aktualisiere das Diagramm bei Änderungen
+      this.initChart();
     }
   }
 
@@ -30,7 +30,7 @@ export class DashboardRankLineChartComponent implements OnInit {
     const option: echarts.EChartsOption = {
       xAxis: {
         type: 'category',
-        data: this.xAxisRankData, // Initiale X-Achse-Daten
+        data: this.xAxisRankData,
         axisLine: {
           show: true,
           lineStyle: {
@@ -76,6 +76,6 @@ export class DashboardRankLineChartComponent implements OnInit {
       ],
     };
 
-    myChart.setOption(option,); // Initialisiere das Diagramm
+    myChart.setOption(option,);
   }
 }

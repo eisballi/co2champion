@@ -1,33 +1,22 @@
-import { AsyncPipe, CommonModule, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { RouterLink } from '@angular/router';
-import {
-  debounceTime,
-  distinctUntilChanged,
-  empty,
-  map,
-  Observable,
-  startWith,
-  Subscription,
-  switchMap,
-} from 'rxjs';
 import { ReportService } from '../services/report.service';
 import { ReportModel } from '../interfaces/report.model';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 
 // CHARTS: https://xieziyu.github.io/ngx-echarts/#/welcome
-import { NgxEchartsDirective, provideEchartsCore } from 'ngx-echarts';
+import { provideEchartsCore } from 'ngx-echarts';
 import * as echarts from 'echarts/core';
 import { BarChart } from 'echarts/charts';
 import { GridComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 echarts.use([BarChart, GridComponent, CanvasRenderer]);
-import type { EChartsCoreOption } from 'echarts/core';
 import { DashboardLineChartComponent } from '../dashboard-progress-chart/dashboard-progress-chart.component';
 import { ProgressChartComponent } from '../dashboard-progress-pie-chart/progress-chart.component';
 import { GoalService } from '../services/goal.service';
@@ -38,7 +27,6 @@ import { DashboardRankLineChartComponent } from '../dashboard-rank-progress-char
 import { RankHistoryService } from '../services/rank-history.service';
 import { RankHistoryModel } from '../interfaces/rank-history.model';
 
-
 @Component({
   selector: 'app-co2champion-dashboard',
   standalone: true,
@@ -46,7 +34,6 @@ import { RankHistoryModel } from '../interfaces/rank-history.model';
     DatePipe,
     RouterLink,
     ReactiveFormsModule,
-    AsyncPipe,
     MatTableModule,
     MatButtonModule,
     MatInputModule,
@@ -54,7 +41,6 @@ import { RankHistoryModel } from '../interfaces/rank-history.model';
     MatPaginator,
     MatPaginatorModule,
     CommonModule,
-    NgxEchartsDirective,
     ProgressChartComponent,
     DashboardLineChartComponent,
     MonthlyReportsChartComponent,
@@ -119,15 +105,15 @@ export class Co2championDashboardComponent implements OnInit, OnDestroy {
   private updateProgressTimeLineChartData(): void {
     if (this.companyGoal) {
       var result = ChartHandler.getEmissionsProgress(this.companyGoal, this.reportsDataSource.data);
-      this.charts_ProgressTimeline_Dates = [...result.xAxisData];
+      this.charts_ProgressTimeline_Dates = [...result.xAxisData]; //TODO: Check if [... ] is necessary
       this.charts_ProgressTimeline_Reductions = [...result.seriesData];
     }
   }
 
   private updateRankLineChartData(): void {
     const result = ChartHandler.getRankHistoryData(this.rankHistoryDataSource.data);
-    this.charts_RankHistory_Dates = result.xAxisRankData;
-    this.charts_RankHistory_Ranks = result.seriesRankData;
+    this.charts_RankHistory_Dates = [...result.xAxisRankData];
+    this.charts_RankHistory_Ranks = [...result.seriesRankData];
   }
 
   private updateReportsVsEmissionsChartData(): void {
@@ -154,5 +140,4 @@ export class Co2championDashboardComponent implements OnInit, OnDestroy {
       this.ngOnInit();
     });
   }
-
 }

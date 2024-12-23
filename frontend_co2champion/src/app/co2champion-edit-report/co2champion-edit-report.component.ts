@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -38,16 +38,15 @@ export class Co2championEditReportComponent {
   ) {
     this.reportFormGroup = new FormGroup({
       id: new FormControl(null),
-      title: new FormControl('', [Validators.required,  Validators.maxLength(200),]),
+      title: new FormControl('', [Validators.required, Validators.maxLength(200),]),
       description: new FormControl('', [Validators.required, Validators.maxLength(800),]),
-      date: new FormControl(new Date(), Validators.required, ),
-      reduced_emissions: new FormControl(null, [Validators.required, Validators.max(999999.99), ]),
+      date: new FormControl(new Date(), Validators.required,),
+      reduced_emissions: new FormControl(null, [Validators.required, Validators.max(999999.99),]),
       company: new FormControl(null),
     });
   }
 
   ngOnInit(): void {
-
     this.reportId = Number(this.route.snapshot.paramMap.get('id'));
 
     if (this.reportId) {
@@ -67,15 +66,16 @@ export class Co2championEditReportComponent {
   saveReport(): void {
     if (this.reportFormGroup.valid) {
       const reportData = this.reportFormGroup.value;
-
+      // Update Report, or alert user if something did not work (e.g. 404 report not found)
       if (this.reportId) {
-        this.reportService.update(reportData, this.reportId).subscribe(() => {
-          alert('Report updated successfully!');
-        });
-      } else {
-        this.reportService.create(reportData).subscribe(() => {
-          alert('Report created successfully!');
-        });
+        this.reportService.update(reportData, this.reportId).subscribe(
+          () => {
+            alert('Report updated successfully!');
+          },
+          (error) => {
+            alert(`Error updating report: ${error.message || 'Something went wrong'}`);
+          }
+        );
       }
     }
   }

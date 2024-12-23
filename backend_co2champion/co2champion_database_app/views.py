@@ -116,12 +116,12 @@ class ReportViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("You are not allowed to create a report for another company.")
         return super().create(request, *args, **kwargs)
 
-    def update(self, request, *args, **kwargs):
-        # Nur das eigene Report darf geändert werden
+    def update(self, request, pk):
         instance = self.get_object()
-        if instance.company.id != request.user.id:
-            raise PermissionDenied("You are not allowed to update this report.")
-        return super().update(request, *args, **kwargs)
+        serializer = self.get_serializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
         # Löschen wird erlaubt, aber nur für die eigene Company

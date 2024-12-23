@@ -4,13 +4,13 @@ import type { EChartsCoreOption } from 'echarts/core';
 
 @Component({
   selector: 'app-progress-chart',
-  standalone: true, // Standalone-Komponente
+  standalone: true,
   templateUrl: './progress-chart.component.html',
   styleUrls: ['./progress-chart.component.scss'],
 })
 export class ProgressChartComponent implements OnInit {
-  @Input() value: number = 0; // Der Wert für den Gauge Chart (z. B. Geschwindigkeit)
-  @Input() max: number = 240; // Der Maximalwert für den Chart (z. B. km/h)
+  @Input() value: number = 0;
+  @Input() max: number = 240;
 
   constructor() { }
 
@@ -36,7 +36,7 @@ export class ProgressChartComponent implements OnInit {
           startAngle: 180,
           endAngle: 0,
           min: 0,
-          max: this.max, // Maximalwert dynamisch setzen
+          max: this.max,
           splitNumber: 5,
           itemStyle: {
             color: '#58D9F9',
@@ -112,7 +112,7 @@ export class ProgressChartComponent implements OnInit {
           },
           data: [
             {
-              value: this.value, // Dynamischer Wert
+              value: this.value,
             },
           ],
         },

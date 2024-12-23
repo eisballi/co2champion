@@ -4,7 +4,6 @@
   </div>
 </div>
 
-
 <form [formGroup]="reportFormGroup" (ngSubmit)="saveReport()" class="report-form__form">
   <mat-form-field>
     <mat-label>Title</mat-label>
@@ -36,7 +35,7 @@
     }
   </mat-form-field>
 
-  <br />
+  <br/>
 
   <mat-card-actions align="start">
     <button mat-raised-button color="primary" [disabled]="!reportFormGroup.valid">

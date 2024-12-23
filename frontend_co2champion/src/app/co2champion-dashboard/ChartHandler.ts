@@ -95,7 +95,6 @@ export class ChartHandler {
       return total + (parseFloat(report.reduced_emissions.toString()) || 0);
     }, 0);
 
-
     const remainingEmissions = companyGoal.start_emissions - totalReduced;
 
     if (remainingEmissions <= 0) {
