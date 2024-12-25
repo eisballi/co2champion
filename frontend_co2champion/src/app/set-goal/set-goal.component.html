@@ -1,0 +1,50 @@
+<div class="set-goal-container">
+    <h1>Set CO2 Goal</h1>
+    <h2>Set or Change Your CO₂-Goal</h2>
+    <form [formGroup]="goalFormGroup" (ngSubmit)="onSubmit()" class="goal-form">
+      <div class="form-group">
+        <label for="currentEmissions">Current Emissions</label>
+        <input
+          id="currentEmissions"
+          type="text"
+          formControlName="currentEmissions"
+          placeholder="e.g. 1000 tons per year"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="targetEmissions">Target Emissions</label>
+        <input
+          id="targetEmissions"
+          type="text"
+          formControlName="targetEmissions"
+          placeholder="e.g. 700 tons per year"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="deadline">Deadline</label>
+        <input
+          id="deadline"
+          type="date"
+          formControlName="deadline"
+          placeholder="e.g. December 31, 2025"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="startDate">Start-date</label>
+        <input
+          id="startDate"
+          type="date"
+          formControlName="startDate"
+          placeholder="e.g. 08.08.2002"
+        />
+      </div>
+
+      <div class="button-group">
+        <button type="submit" class="btn">Set Goal</button>
+        <button type="button" class="btn" (click)="onChangeGoal()">Change Goal</button>
+      </div>
+    </form>
+  </div>

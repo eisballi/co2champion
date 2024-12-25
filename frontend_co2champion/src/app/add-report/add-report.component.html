@@ -1,0 +1,22 @@
+<div class="add-report-container">
+  <h1>Add Report</h1>
+  <form [formGroup]="reportFormGroup" (ngSubmit)="onSubmit()">
+    <div>
+      <label>Title</label>
+      <input formControlName="title" placeholder="Report Title" />
+    </div>
+    <div>
+      <label>Description</label>
+      <textarea formControlName="description" placeholder="Description"></textarea>
+    </div>
+    <div>
+      <label>Reduced Emissions</label>
+      <input type="number" formControlName="reduced_emissions" />
+    </div>
+    <div>
+      <label>Date</label>
+      <input type="date" formControlName="date" />
+    </div>
+    <button mat-raised-button color="primary" type="submit">Submit Report</button>
+  </form>
+</div>

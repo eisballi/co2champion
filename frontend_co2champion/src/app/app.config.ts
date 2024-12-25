@@ -28,6 +28,6 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptorsFromDi()),
     provideAnimationsAsync(),
     provideAnimationsAsync(),
-    importProvidersFrom(StarRatingModule.forRoot()),
+    importProvidersFrom(StarRatingModule.forRoot()), provideAnimationsAsync(),
   ],
 };

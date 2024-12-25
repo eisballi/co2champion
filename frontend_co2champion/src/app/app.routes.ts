@@ -7,6 +7,8 @@ import { LoginComponent } from './login/login.component';
 import { authGuard } from './auth.guard';
 import { ImprintComponent } from './imprint/imprint.component';
 import { GdprComponent } from './gdpr/gdpr.component';
+import { AddReportComponent } from './add-report/add-report.component';
+import { SetGoalComponent } from './set-goal/set-goal.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
@@ -18,8 +20,8 @@ export const routes: Routes = [
   { path: 'dashboard', component: Co2championDashboardComponent, canActivate: [authGuard] },
 
   { path: 'ranking', component: Co2championDashboardComponent, /* canActivate: [authGuard] */ }, // Jeder darf auf das Ranking zugreifen
-  { path: 'add-report', component: Co2championDashboardComponent, canActivate: [authGuard] },
-  { path: 'set-goal', component: Co2championDashboardComponent, canActivate: [authGuard] },
+  { path: 'add-report', component: AddReportComponent, canActivate: [authGuard] },
+  { path: 'set-goal', component: SetGoalComponent, canActivate: [authGuard] },
   { path: 'settings', component: Co2championDashboardComponent, canActivate: [authGuard] },
   { path: 'imprint', component: ImprintComponent, canActivate: [authGuard] },
   { path: 'gdpr', component: GdprComponent, canActivate: [authGuard] },
