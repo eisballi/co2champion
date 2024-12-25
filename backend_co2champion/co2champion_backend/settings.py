@@ -53,7 +53,7 @@ MIDDLEWARE = [
 
 SIMPLE_JWT = {
  'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=3)
-} 
+}
 
 ROOT_URLCONF = 'co2champion_backend.urls'
 
@@ -133,4 +133,26 @@ REST_FRAMEWORK = {
 'rest_framework_simplejwt.authentication.JWTAuthentication',
 'rest_framework.authentication.BasicAuthentication',
 )
+}
+
+LOGGING = {
+    'version': 1,
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        }
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+        }
+    },
+    'loggers': {
+        'django.db.backends': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            }
+        }
 }

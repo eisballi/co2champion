@@ -71,8 +71,8 @@ class Goal(models.Model):
     company = models.OneToOneField(Company, on_delete=models.CASCADE, related_name='goal')
     start_emissions = models.DecimalField(max_digits=10, decimal_places=2) # Max = 9.999.999,99 Tons/Year
     target_emissions = models.DecimalField(max_digits=10, decimal_places=2) # Max = 9.999.999,99 Tons/Year
-    deadline = models.DateField()
     start_date = models.DateField()
+    deadline = models.DateField()
 
     def __str__(self):
         return f"Goal for {self.company.name}"
