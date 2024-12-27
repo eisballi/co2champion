@@ -1,33 +1,73 @@
-.add-report-container {
+// Hintergrund für die gesamte Seite
+.add-report-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; // Passt die Höhe an, damit kein Scrollen erforderlich ist
+  background-color: #ccffcc; // Gleiche grüne Hintergrundfarbe wie andere Seiten
+}
+
+// Container für das Formular
+.add-report-form-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+// Titel des Formulars
+.form-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+// Formular-Stile
+.form {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 20px;
+  gap: 0.8rem;
 }
 
-.report-form {
-  width: 100%;
-  max-width: 600px;
-}
-
+// Eingabe-Felder
 .form-group {
-  margin-bottom: 15px;
+  text-align: left;
+
+  .form-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .form-input {
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    width: 100%;
+  }
 }
 
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
+// Button
+.form-button {
+  padding: 0.6rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
   font-weight: bold;
-}
-
-.form-group input,
-.form-group textarea {
+  cursor: pointer;
+  transition: background-color 0.3s;
   width: 100%;
-  padding: 8px;
-  font-size: 16px;
-}
 
-.button-group {
-  display: flex;
-  justify-content: space-between;
+  &:hover {
+    background-color: #0056b3;
+  }
 }

@@ -1,22 +1,46 @@
-<div class="add-report-container">
-  <h1>Add Report</h1>
-  <form [formGroup]="reportFormGroup" (ngSubmit)="onSubmit()">
-    <div>
-      <label>Title</label>
-      <input formControlName="title" placeholder="Report Title" />
-    </div>
-    <div>
-      <label>Description</label>
-      <textarea formControlName="description" placeholder="Description"></textarea>
-    </div>
-    <div>
-      <label>Reduced Emissions</label>
-      <input type="number" formControlName="reduced_emissions" />
-    </div>
-    <div>
-      <label>Date</label>
-      <input type="date" formControlName="date" />
-    </div>
-    <button mat-raised-button color="primary" type="submit">Submit Report</button>
-  </form>
+<div class="add-report-page">
+  <div class="add-report-form-container">
+    <h2 class="form-title">Add New Report</h2>
+    <form [formGroup]="reportFormGroup" (ngSubmit)="onSubmit()" class="form">
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input
+          type="text"
+          formControlName="title"
+          class="form-input"
+          placeholder="Enter the report title"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea
+          formControlName="description"
+          class="form-input"
+          placeholder="Enter a description"
+          required
+        ></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reduced Emissions (Tons)</label>
+        <input
+          type="number"
+          formControlName="reduced_emissions"
+          class="form-input"
+          placeholder="Enter reduced emissions"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input
+          type="date"
+          formControlName="date"
+          class="form-input"
+          required
+        />
+      </div>
+      <button type="submit" class="form-button">Submit Report</button>
+    </form>
+  </div>
 </div>

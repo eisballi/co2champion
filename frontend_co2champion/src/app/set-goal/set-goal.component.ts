@@ -69,7 +69,7 @@ export class SetGoalComponent implements OnInit {
     if (target >= start) {
       return { targetTooHigh: true };
     }
-    if (target < start / 2) {
+    if (target > start / 2) {
       return { targetTooLow: true };
     }
     return null;
