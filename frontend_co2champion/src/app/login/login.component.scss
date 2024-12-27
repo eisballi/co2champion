@@ -1,0 +1,63 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; // Verhindert Scrollen
+  height: 100%; // Nimmt die gesamte Höhe ein
+}
+
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 90vh; // Passt an Bildschirmgröße an
+    height: 100%; // Sicherstellen, dass kein zusätzlicher Raum entsteht
+    background-color: #ccffcc; // Gleiche grüne Hintergrundfarbe
+    overflow: hidden; // Verhindert Scrollen
+}
+
+.login-form-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 1rem;
+}
+
+.login-card {
+  width: 100%;
+  padding: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  background-color: white;
+
+  mat-card-header {
+    text-align: center;
+    margin-bottom: 1rem;
+
+    mat-card-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #333;
+    }
+  }
+
+  mat-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    mat-form-field {
+      width: 100%;
+    }
+  }
+
+  mat-card-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+
+    button {
+      flex: 1;
+      margin: 0 0.2rem;
+    }
+  }
+}

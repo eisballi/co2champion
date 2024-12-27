@@ -1,32 +1,36 @@
-<form [formGroup]="loginFormGroup" (ngSubmit)="login()">
-  <mat-card class="login-card">
-    <mat-card-header>
-      <mat-card-title>Login</mat-card-title>
-    </mat-card-header>
-    <mat-card-content style="display: flex; flex-direction: column">
-      <mat-form-field>
-        <input
-          matInput
-          placeholder="Company Name"
-          formControlName="username"
-          name="username"
-          required
-        />
-      </mat-form-field>
-      <mat-form-field>
-        <input
-          matInput
-          placeholder="Password"
-          formControlName="password"
-          type="password"
-          name="password"
-          required
-        />
-      </mat-form-field>
-    </mat-card-content>
-    <mat-card-actions>
-      <button mat-button type="submit" color="primary">Login</button>
-      <button mat-button color="accent" (click)="navigateToRegister()">Register</button>
-    </mat-card-actions>
-  </mat-card>
-</form>
+<div class="login-page">
+  <div class="login-form-container">
+    <mat-card class="login-card">
+      <mat-card-header>
+        <mat-card-title>Login</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="loginFormGroup" (ngSubmit)="login()" class="form">
+          <mat-form-field>
+            <input
+              matInput
+              placeholder="Company Name"
+              formControlName="username"
+              name="username"
+              required
+            />
+          </mat-form-field>
+          <mat-form-field>
+            <input
+              matInput
+              placeholder="Password"
+              formControlName="password"
+              type="password"
+              name="password"
+              required
+            />
+          </mat-form-field>
+          <mat-card-actions>
+            <button mat-raised-button type="submit" color="primary">Login</button>
+            <button mat-raised-button color="accent" (click)="navigateToRegister()">Register</button>
+          </mat-card-actions>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
