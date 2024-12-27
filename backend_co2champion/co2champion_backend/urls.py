@@ -8,7 +8,7 @@ from rest_framework_simplejwt.views import (
 )
 
 from co2champion_database_app.serializers import MyTokenObtainPairView
-from co2champion_database_app.views import CompanyViewSet, GenreViewSet, GoalViewSet, MovieViewSet, PersonViewSet, RankHistoryViewSet, RankViewSet, ReportViewSet
+from co2champion_database_app.views import CompanyViewSet, GenreViewSet, GoalViewSet, MovieViewSet, PersonViewSet, RankHistoryViewSet, RankViewSet, RegisterAPIView, ReportViewSet
 
 
 
@@ -29,5 +29,8 @@ urlpatterns = [
     path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/', include(router.urls)),
+    path('register/', RegisterAPIView.as_view(), name='register'),
+    path('api/register/', RegisterAPIView.as_view(), name='register'),
+
 ]
 

@@ -2,6 +2,11 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.views import View
 from django.db import IntegrityError
+from django.contrib.auth import get_user_model
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
 
 from rest_framework import viewsets, status
 from rest_framework.exceptions import PermissionDenied
@@ -14,6 +19,44 @@ from . import models
 import datetime
 
 ######## CO2CHAMPION ########
+
+class RegisterAPIView(APIView):
+    def post(self, request):
+        User = get_user_model()
+        username = request.data.get("username")
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        # Validierung der Eingaben
+        if not username or not email or not password:
+            return Response(
+                {"error": "All fields are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if User.objects.filter(username=username).exists():
+            return Response(
+                {"error": "User with this username already exists"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if User.objects.filter(email=email).exists():
+            return Response(
+                {"error": "User with this email already exists"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.create_user(username=username, email=email, password=password)
+            return Response(
+                {"message": "User created successfully"},
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class RankViewSet(viewsets.ReadOnlyModelViewSet):
     """
