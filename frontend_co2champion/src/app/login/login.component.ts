@@ -13,6 +13,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { UserService } from '../services/user.service';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-login',
@@ -26,8 +27,10 @@ import { UserService } from '../services/user.service';
     MatButtonModule,
     MatInputModule,
     MatSnackBarModule,
+    MatIconModule,
   ],
 })
+
 export class LoginComponent implements OnInit {
   loginFormGroup: FormGroup;
 
@@ -51,7 +54,13 @@ export class LoginComponent implements OnInit {
       const { username, password } = this.loginFormGroup.value;
       this.userService.login({ username, password });
     } else {
-      this.snackbar.open('Please fill in all required fields', 'OK', { duration: 3000 });
+      this.snackbar.open('Please fill in all required fields', 'OK', {
+        duration: 3000,
+      });
     }
+  }
+
+  navigateToRegister(): void {
+    this.router.navigate(['/register']); // Leitet zur Registrierungsseite weiter
   }
 }

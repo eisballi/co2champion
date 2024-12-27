@@ -9,6 +9,7 @@ import { ImprintComponent } from './imprint/imprint.component';
 import { GdprComponent } from './gdpr/gdpr.component';
 import { AddReportComponent } from './add-report/add-report.component';
 import { SetGoalComponent } from './set-goal/set-goal.component';
+import { RegisterComponent } from './register/register.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
@@ -16,6 +17,7 @@ export const routes: Routes = [
   { path: 'movie-form', component: MovieFormComponent, canActivate: [authGuard] },
   { path: 'movie-form/:id', component: MovieFormComponent, canActivate: [authGuard] },
   { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent },
 
   { path: 'dashboard', component: Co2championDashboardComponent, canActivate: [authGuard] },
 
@@ -27,5 +29,6 @@ export const routes: Routes = [
   { path: 'gdpr', component: GdprComponent, canActivate: [authGuard] },
   { path: 'log-out', component: Co2championDashboardComponent, canActivate: [authGuard] },
   { path: 'edit-report/:id', component: Co2championEditReportComponent, canActivate: [authGuard] },
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
 
 ];

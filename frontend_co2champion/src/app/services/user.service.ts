@@ -3,7 +3,7 @@ import { Injectable, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -29,6 +29,10 @@ export class UserService {
       this.isLoggedIn$.next(tokenValid);
       this.isLoggedInSignal.set(tokenValid);
     }
+  }
+
+  register(user: { username: string; email: string; password: string }): Observable<any> {
+    return this.http.post('/api/register/', user);
   }
 
   login(userData: { username: string; password: string }): void {
@@ -59,5 +63,4 @@ export class UserService {
     const permissions = decodedToken?.permissions;
     return permissions ? permission in permissions : false;
    }
-   
 }
