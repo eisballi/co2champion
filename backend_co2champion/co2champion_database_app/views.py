@@ -6,56 +6,78 @@ from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from co2champion_database_app.models import Company
+from django.contrib.auth.models import User
+
 
 
 from rest_framework import viewsets, status
+from django.contrib.auth.models import Permission
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+
 
 from .serializers import *
 from . import models
 
 import datetime
+import uuid
+
 
 ######## CO2CHAMPION ########
 
 class RegisterAPIView(APIView):
     def post(self, request):
-        User = get_user_model()
-        username = request.data.get("username")
+        company_name = request.data.get("company_name")
         email = request.data.get("email")
         password = request.data.get("password")
 
-        # Validierung der Eingaben
-        if not username or not email or not password:
+        if not company_name or not email or not password:
             return Response(
-                {"error": "All fields are required"},
+                {"error": "All fields are required."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        if User.objects.filter(username=username).exists():
+        # Überprüfen, ob die Firma existiert
+        if Company.objects.filter(name=company_name).exists():
             return Response(
-                {"error": "User with this username already exists"},
+                {"error": "Company name already exists."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        if User.objects.filter(email=email).exists():
-            return Response(
-                {"error": "User with this email already exists"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # Benutzername prüfen und ggf. anpassen
+        original_username = company_name
+        username = original_username
+        counter = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{original_username}{counter}"
+            counter += 1
 
         try:
+            # Benutzer erstellen
             user = User.objects.create_user(username=username, email=email, password=password)
+
+            # Firma erstellen und mit Benutzer verknüpfen
+            company = Company.objects.create(
+                name=company_name,
+                email=email,
+                password=password,
+                UID=str(uuid.uuid4()),  # Unique Identifier generieren
+                user=user,
+                total_employees=0,  # Standardwerte
+                total_income=0.00,
+                current_rank=0
+            )
+
             return Response(
-                {"message": "User created successfully"},
+                {"message": "Registration successful."},
                 status=status.HTTP_201_CREATED
             )
-        except Exception as e:
+        except IntegrityError as e:
             return Response(
-                {"error": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {"error": f"Integrity Error: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST
             )
 
 class RankViewSet(viewsets.ReadOnlyModelViewSet):
@@ -154,10 +176,17 @@ class ReportViewSet(viewsets.ModelViewSet):
         #return models.Report.objects.all()
 
     def create(self, request, *args, **kwargs):
-        # Nur das eigene Report darf erstellt werden
-        if request.data.get('company') != str(request.user.id):
-            raise PermissionDenied("You are not allowed to create a report for another company.")
+        if not request.user.is_authenticated:
+            raise PermissionDenied("User is not authenticated.")
+        if not hasattr(request.user, 'company'):
+            raise PermissionDenied("User does not belong to any company.")
         return super().create(request, *args, **kwargs)
+    
+    def perform_create(self, serializer):
+        # Überprüfe, ob der Benutzer mit einer Firma verknüpft ist
+        if not hasattr(self.request.user, 'company'):
+            raise PermissionDenied("You do not belong to any company.")
+        serializer.save(company=self.request.user.company)
 
     def update(self, request, pk):
         instance = self.get_object()

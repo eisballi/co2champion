@@ -1,6 +1,8 @@
 import datetime
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
+
 
 class Genre(models.Model):
 
@@ -42,12 +44,13 @@ class Movie(models.Model):
 class Company(models.Model):
     id = models.AutoField(primary_key=True)
     UID = models.CharField(max_length=255, unique=True)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=255)  # In production, use hashed passwords
+    password = models.CharField(max_length=255)  # In Produktion: hashed password verwenden
     total_employees = models.IntegerField()
     total_income = models.DecimalField(max_digits=15, decimal_places=2)
     current_rank = models.IntegerField()
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='company', null=True)
 
     def __str__(self):
         return self.name

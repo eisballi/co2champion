@@ -19,6 +19,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class RegisterComponent {
   registerFormGroup: FormGroup;
+  generatedUsername: string = ''; // Username wird hier gespeichert
 
   constructor(
     private fb: FormBuilder,
@@ -26,23 +27,43 @@ export class RegisterComponent {
     private router: Router
   ) {
     this.registerFormGroup = this.fb.group({
-      username: ['', Validators.required],
+      company_name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
       confirm_password: ['', Validators.required],
     });
   }
 
+  // Generiere Username basierend auf dem Company Name
+  generateUsername(): void {
+    const companyName = this.registerFormGroup.get('company_name')?.value;
+    if (companyName) {
+      // Entferne Sonderzeichen und ersetze Leerzeichen durch "_"
+      this.generatedUsername = companyName
+        .toLowerCase()
+        .replace(/[^a-zA-Z0-9]/g, '')
+        .replace(/\s+/g, '_');
+    } else {
+      this.generatedUsername = '';
+    }
+  }
 
   onRegister(): void {
     if (this.registerFormGroup.valid) {
-      const { username, email, password, confirm_password } = this.registerFormGroup.value;
+      const { company_name, email, password, confirm_password } = this.registerFormGroup.value;
+
       if (password !== confirm_password) {
         alert("Passwords do not match!");
         return;
       }
 
-      this.http.post('/api/register/', { username, email, password, confirm_password }).subscribe({
+      // Backend-Aufruf mit generiertem Username
+      this.http.post('/api/register/', { 
+        company_name, 
+        username: this.generatedUsername, 
+        email, 
+        password 
+      }).subscribe({
         next: () => {
           alert('Registration successful! Redirecting to login...');
           this.router.navigate(['/login']);
