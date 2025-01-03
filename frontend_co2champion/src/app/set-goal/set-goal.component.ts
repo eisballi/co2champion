@@ -52,11 +52,11 @@ export class SetGoalComponent implements OnInit {
             start_emissions: this.currentGoal.start_emissions,
             target_emissions: this.currentGoal.target_emissions,
             start_date: this.currentGoal.start_date,
-            deadline: this.currentGoal.deadline
+            deadline: this.currentGoal.deadline,
           });
         }
       },
-      error: (err) => console.error('Failed to load goal:', err)
+      error: (err) => console.error('Failed to load goal:', err),
     });
   }
 
@@ -104,12 +104,17 @@ export class SetGoalComponent implements OnInit {
   onSubmit(): void {
     if (this.goalFormGroup.valid) {
       const goalData: GoalModel = this.goalFormGroup.value;
-
+  
       if (this.isGoalSet && this.currentGoal) {
         // Update Goal
         this.goalService.updateGoal(this.currentGoal.id, goalData).subscribe({
-          next: () => alert('Goal updated successfully!'),
-          error: (err) => alert('Failed to update goal: ' + err.message)
+          next: () => {
+            alert('Goal updated successfully!');
+            this.loadCurrentGoal();
+          },
+          error: (err) => {
+            alert('Failed to update goal: ' + err.message);
+          },
         });
       } else {
         // Create Goal
@@ -117,9 +122,11 @@ export class SetGoalComponent implements OnInit {
           next: (response) => {
             alert('Goal created successfully!');
             this.isGoalSet = true;
-            this.currentGoal = response; // Save current goal
+            this.currentGoal = response; // Speichere das aktuelle Ziel
           },
-          error: (err) => alert('Failed to create goal: ' + err.message)
+          error: (err) => {
+            alert('Failed to create goal: ' + err.message);
+          },
         });
       }
     } else {

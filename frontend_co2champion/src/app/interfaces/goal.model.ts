@@ -6,9 +6,9 @@
 
 export interface GoalModel {
   id: number;
-  company: number
+  company: number;
   start_emissions: number;
   target_emissions: number;
-  deadline: Date;
-  start_date: Date;
+  start_date: string; // als ISO-String
+  deadline: string;   // als ISO-String
 }

@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { GoalModel } from '../interfaces/goal.model';
@@ -10,8 +10,16 @@ export class GoalService {
   constructor(private http: HttpClient) {}
 
   // Goal der eigenen Company laden
-  getGoal(queryParams?: Record<string, string>): Observable<GoalModel[]> {
-    return this.http.get<GoalModel[]>('/api/goal/', { params: queryParams });
+  setGoal(goalData: GoalModel): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+    });
+    return this.http.post('/api/goal/', goalData, { headers });
+  }
+
+  getGoal(): Observable<GoalModel[]> {
+    return this.http.get<GoalModel[]>('/api/goal/');
   }
 
   // Goal für die eigene Company erstellen

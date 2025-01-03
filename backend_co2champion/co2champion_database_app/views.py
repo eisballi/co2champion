@@ -144,11 +144,30 @@ class GoalViewSet(viewsets.ModelViewSet):
         # Nur Goals der eigenen Company anzeigen
         return self.queryset.filter(company=self.request.user.id)
 
-    def create(self, request, *args, **kwargs):
-        # Nur das eigene Goal darf erstellt werden
-        if request.data.get('company') != str(request.user.id):
-            raise PermissionDenied("You are not allowed to create a goal for another company.")
-        return super().create(request, *args, **kwargs)
+    def create_or_update_goal(self, request, *args, **kwargs):
+        # Stelle sicher, dass der Benutzer authentifiziert ist und einer Firma zugeordnet ist
+        if not hasattr(request.user, 'company'):
+            raise PermissionDenied("You do not belong to any company.")
+
+        # Hole die Firma des aktuellen Benutzers
+        company = request.user.company
+
+        # Prüfe, ob bereits ein Ziel für diese Firma existiert
+        existing_goal = models.Goal.objects.filter(company=company).first()
+
+        if existing_goal:
+            # Falls ein Ziel existiert, aktualisiere es
+            serializer = self.get_serializer(existing_goal, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # Falls kein Ziel existiert, erstelle ein neues
+        request.data['company'] = company.id
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
         # Nur das eigene Goal darf geändert werden

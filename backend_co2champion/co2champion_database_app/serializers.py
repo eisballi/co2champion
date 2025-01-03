@@ -44,8 +44,11 @@ class CompanySerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 class GoalSerializer(serializers.ModelSerializer):
-    #company = serializers.PrimaryKeyRelatedField(queryset=models.Company.objects.all())
     company = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    def create(self, validated_data):
+        validated_data['company'] = self.context['request'].user.company
+        return super().create(validated_data)
 
 
     class Meta:
