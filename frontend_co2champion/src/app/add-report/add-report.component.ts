@@ -26,13 +26,10 @@ export class AddReportComponent implements OnInit {
 
   onSubmit(): void {
     if (this.reportFormGroup.valid) {
-      const reportData: ReportModel = {
-        ...this.reportFormGroup.value,
-        company: parseInt(localStorage.getItem('companyId') || '5', 10),
-      };
+      const reportData = { ...this.reportFormGroup.value }; // Ohne companyId
       this.reportService.create(reportData).subscribe({
         next: () => alert('Report successfully created!'),
-        error: (err) => alert('Error: ' + err.message),
+        error: (err) => console.error('Error:', err),
       });
     } else {
       alert('Invalid form!');

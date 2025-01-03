@@ -172,8 +172,14 @@ class ReportViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # Nur Reports der eigenen Company anzeigen
-        return self.queryset.filter(company=self.request.user.id)
-        #return models.Report.objects.all()
+        return self.queryset.filter(company=self.request.user.company)
+
+    def perform_create(self, serializer):
+        # Automatisch die Firma aus dem Benutzer zuweisen
+        if not hasattr(self.request.user, 'company'):
+            raise PermissionDenied("You do not belong to any company.")
+        serializer.save(company=self.request.user.company)
+
 
     def create(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -182,11 +188,6 @@ class ReportViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("User does not belong to any company.")
         return super().create(request, *args, **kwargs)
     
-    def perform_create(self, serializer):
-        # Überprüfe, ob der Benutzer mit einer Firma verknüpft ist
-        if not hasattr(self.request.user, 'company'):
-            raise PermissionDenied("You do not belong to any company.")
-        serializer.save(company=self.request.user.company)
 
     def update(self, request, pk):
         instance = self.get_object()

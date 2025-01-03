@@ -4,12 +4,13 @@ from rest_framework_simplejwt.views import TokenObtainPairView;
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer;
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
- @classmethod
- def get_token(cls, user):
-    token = super().get_token(user)
-    # Add custom claims
-    token['permissions'] = dict.fromkeys(user.get_all_permissions())
-    return token
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        # Add custom claims
+        if hasattr(user, 'company'):
+            token['company_id'] = user.company.id
+        return token
  
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
@@ -53,12 +54,12 @@ class GoalSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 class ReportSerializer(serializers.ModelSerializer):
-    company = serializers.PrimaryKeyRelatedField(queryset=models.Company.objects.all())
+    company = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = models.Report
         fields = '__all__'
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'company']
 
 class RankHistorySerializer(serializers.ModelSerializer):
     company = serializers.PrimaryKeyRelatedField(queryset=models.Company.objects.all())
