@@ -142,45 +142,40 @@ class GoalViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # Nur Goals der eigenen Company anzeigen
-        return self.queryset.filter(company=self.request.user.id)
+        return self.queryset.filter(company=self.request.user.company)
 
-    def create_or_update_goal(self, request, *args, **kwargs):
-        # Stelle sicher, dass der Benutzer authentifiziert ist und einer Firma zugeordnet ist
-        if not hasattr(request.user, 'company'):
-            raise PermissionDenied("You do not belong to any company.")
+    def create(self, request, *args, **kwargs):
+        # Falls ein Ziel bereits existiert, aktualisiere es
+        if hasattr(request.user, 'company'):
+            company = request.user.company
+            existing_goal = models.Goal.objects.filter(company=company).first()
+            if existing_goal:
+                serializer = self.get_serializer(existing_goal, data=request.data, partial=True)
+                serializer.is_valid(raise_exception=True)
+                self.perform_update(serializer)
+                return Response(serializer.data, status=status.HTTP_200_OK)
 
-        # Hole die Firma des aktuellen Benutzers
-        company = request.user.company
-
-        # Prüfe, ob bereits ein Ziel für diese Firma existiert
-        existing_goal = models.Goal.objects.filter(company=company).first()
-
-        if existing_goal:
-            # Falls ein Ziel existiert, aktualisiere es
-            serializer = self.get_serializer(existing_goal, data=request.data, partial=True)
+            # Neues Ziel erstellen
+            request.data['company'] = company.id
+            serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        # Falls kein Ziel existiert, erstelle ein neues
-        request.data['company'] = company.id
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            self.perform_create(serializer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            raise PermissionDenied("You do not belong to any company.")
 
     def update(self, request, *args, **kwargs):
         # Nur das eigene Goal darf geändert werden
         instance = self.get_object()
-        if instance.company.id != request.user.id:
+        if instance.company.id != request.user.company.id:
             raise PermissionDenied("You are not allowed to update this goal.")
         return super().update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         # Löschen wird erlaubt, aber nur für die eigene Company
         instance = self.get_object()
-        if instance.company.id != request.user.id:
-            raise PermissionDenied("You are not allowed to delete this goal.")
+        if instance.company.id != request.user.company.id:
+            raise PermissionDenied("You are not allowed to update this goal.")
         return super().destroy(request, *args, **kwargs)
 
 
@@ -215,12 +210,12 @@ class ReportViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def destroy(self, request, *args, **kwargs):
-        # Löschen wird erlaubt, aber nur für die eigene Company
-        instance = self.get_object()
-        if instance.company.id != request.user.id:
-            raise PermissionDenied("You are not allowed to delete this report.")
-        return super().destroy(request, *args, **kwargs)
+def destroy(self, request, *args, **kwargs):
+    # Löschen wird erlaubt, aber nur für die eigene Company
+    instance = self.get_object()
+    if instance.company.id != request.user.company.id:
+        raise PermissionDenied("You are not allowed to update this goal.")
+    return super().destroy(request, *args, **kwargs)
 
 
 ######## UE ########

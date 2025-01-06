@@ -45,7 +45,7 @@ export class SetGoalComponent implements OnInit {
   private loadCurrentGoal(): void {
     this.goalService.getGoal().subscribe({
       next: (goals) => {
-        if (goals.length > 0) {
+        if (goals && goals.length > 0) {
           this.currentGoal = goals[0];
           this.isGoalSet = true;
           this.goalFormGroup.patchValue({
@@ -54,11 +54,15 @@ export class SetGoalComponent implements OnInit {
             start_date: this.currentGoal.start_date,
             deadline: this.currentGoal.deadline,
           });
+        } else {
+          this.isGoalSet = false;
+          this.currentGoal = null;
         }
       },
       error: (err) => console.error('Failed to load goal:', err),
     });
-  }
+}
+
 
   private targetGreaterThanStartValidator(control: AbstractControl): ValidationErrors | null {
     const target = control.value;
@@ -101,36 +105,37 @@ export class SetGoalComponent implements OnInit {
     return null;
   }
 
-  onSubmit(): void {
-    if (this.goalFormGroup.valid) {
-      const goalData: GoalModel = this.goalFormGroup.value;
-  
-      if (this.isGoalSet && this.currentGoal) {
-        // Update Goal
-        this.goalService.updateGoal(this.currentGoal.id, goalData).subscribe({
-          next: () => {
-            alert('Goal updated successfully!');
-            this.loadCurrentGoal();
-          },
-          error: (err) => {
-            alert('Failed to update goal: ' + err.message);
-          },
-        });
+    onSubmit(): void {
+      if (this.goalFormGroup.valid) {
+          const goalData: GoalModel = this.goalFormGroup.value;
+
+          if (this.isGoalSet && this.currentGoal) {
+              // Update Goal
+              this.goalService.updateGoal(this.currentGoal.id, goalData).subscribe({
+                  next: () => {
+                      alert('Goal updated successfully!');
+                      this.loadCurrentGoal();
+                  },
+                  error: (err) => {
+                      alert('Failed to update goal: ' + err.message);
+                  },
+              });
+          } else {
+              // Create Goal
+              this.goalService.createGoal(goalData).subscribe({
+                  next: (response) => {
+                      alert('Goal created successfully!');
+                      this.isGoalSet = true;
+                      this.currentGoal = response;
+                      this.loadCurrentGoal();
+                  },
+                  error: (err) => {
+                      alert('Failed to create goal: ' + err.message);
+                  },
+              });
+          }
       } else {
-        // Create Goal
-        this.goalService.createGoal(goalData).subscribe({
-          next: (response) => {
-            alert('Goal created successfully!');
-            this.isGoalSet = true;
-            this.currentGoal = response; // Speichere das aktuelle Ziel
-          },
-          error: (err) => {
-            alert('Failed to create goal: ' + err.message);
-          },
-        });
+          alert('Please fill out all required fields!');
       }
-    } else {
-      alert('Please fill out all required fields!');
-    }
   }
 }

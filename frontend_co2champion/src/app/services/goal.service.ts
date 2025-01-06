@@ -32,6 +32,13 @@ export class GoalService {
     return this.http.put<GoalModel>(`/api/goal/${id}/`, goal);
   }
 
+  createOrUpdateGoal(goalData: GoalModel): Observable<any> {
+    if (goalData.id) {
+        return this.updateGoal(goalData.id, goalData);
+    }
+    return this.createGoal(goalData);
+}
+
   // Goal löschen (nur eigenes Goal)
   deleteGoal(id: number): Observable<void> {
     return this.http.delete<void>(`/api/goal/${id}/`);
