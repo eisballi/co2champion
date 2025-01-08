@@ -3,6 +3,8 @@ from . import models
 from rest_framework_simplejwt.views import TokenObtainPairView;
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer;
 
+######## CO2CHAMPION ########
+
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -11,30 +13,9 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         if hasattr(user, 'company'):
             token['company_id'] = user.company.id
         return token
- 
+
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
-
-class GenreSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = models.Genre
-        fields = '__all__'
-        read_only_fields = ['id']
-
-class PersonSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = models.Person
-        fields = '__all__'
-
-class MovieSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = models.Movie
-        fields = '__all__'
-
-######## CO2CHAMPION ########
 
 class CompanySerializer(serializers.ModelSerializer):
 
