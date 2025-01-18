@@ -9,6 +9,11 @@ from rest_framework import viewsets, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.db.models import Sum, F, Case, When, Value, FloatField, Q
+from rest_framework.pagination import PageNumberPagination
+from django.db.models.functions import Cast
+
+
 
 from .serializers import *
 from . import models
@@ -69,33 +74,42 @@ class RegisterAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+class RankPagination(PageNumberPagination):
+    page_size = 10  # Show top 10 companies per page
+
+from django.db.models.functions import Cast
+
 class RankViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    API ViewSet, das alle Companies anzeigt, die von jedem gesehen werden können.
-    """
     serializer_class = CompanySerializer
-    permission_classes = [AllowAny]  # Jeder darf lesen
-    queryset = models.Company.objects.all()
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
-        """
-        Liefert die Top 10 Firmen zurück
-        und fügt die eigene Firma als 11. hinzu, falls der Nutzer angemeldet ist
-        und sie nicht bereits unter den Top 10 ist.
-        """
+        companies = models.Company.objects.annotate(
+            progress=Case(
+                When(
+                    goal__start_emissions__gt=F('goal__target_emissions'),
+                    then=(
+                        (Cast(F('goal__start_emissions'), FloatField()) - Cast(F('goal__target_emissions'), FloatField())) /
+                        Cast(F('goal__start_emissions'), FloatField()) * Value(100.0, output_field=FloatField())
+                    )
+                ),
+                default=Value(0.0, output_field=FloatField()),
+                output_field=FloatField(),
+            ),
+            score=(
+                Cast(F('progress'), FloatField()) * Value(0.5, output_field=FloatField()) +
+                Cast(F('total_employees'), FloatField()) * Value(0.3, output_field=FloatField()) +
+                Cast(F('total_income'), FloatField()) * Value(0.2, output_field=FloatField())
+            ),
+            total_reduction=Sum(
+                'reports__reduced_emissions',
+                output_field=FloatField()  # Explicitly set output_field
+            )
+        ).order_by('-score')
 
-        # Hole die obersten 10 Firmen, geordnet nach dem Rang
-        # Angenommen das der Rank ausserhalb bestimmt wird, sonst hier den Algo-Aufruf
-        top_companies = models.Company.objects.all().order_by('current_rank')[:10]
+        return companies[:10]  # Top 10 companies by score
 
-        # 11te Company wenn User nicht unter Top 10
-        if self.user.is_authenticated:
-            company = self.queryset.filter(id=self.request.user.id)
-            if company not in top_companies:
-                top_companies.append(company)
-
-        return Response(CompanySerializer(top_companies, many=True).data)
-
+    
 class RankHistoryViewSet(viewsets.ModelViewSet):
     queryset = models.RankHistory.objects.all()
     serializer_class = RankHistorySerializer
