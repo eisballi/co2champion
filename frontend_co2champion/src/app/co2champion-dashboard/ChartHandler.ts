@@ -101,6 +101,6 @@ export class ChartHandler {
       return 100
     }
 
-    return (remainingEmissions / companyGoal.target_emissions);
+    return ((companyGoal.start_emissions - remainingEmissions) / companyGoal.start_emissions) * 100;
   }
 }

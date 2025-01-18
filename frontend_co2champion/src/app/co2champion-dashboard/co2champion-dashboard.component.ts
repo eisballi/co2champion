@@ -124,7 +124,7 @@ export class Co2championDashboardComponent implements OnInit, OnDestroy {
   }
 
   updateOverallProgress() {
-    if (!this.companyGoal || !this.companyGoal.start_emissions || !this.companyGoal.target_emissions || !this.reportsDataSource.data) {
+    if (!this.companyGoal || !this.reportsDataSource.data) {
       this.charts_OverallProgress = 0;
     } else {
       this.charts_OverallProgress = ChartHandler.getCurrentPieChartProgress(this.companyGoal, this.reportsDataSource.data)
