@@ -17,57 +17,23 @@ import uuid
 ######## CO2CHAMPION ########
 
 class RegisterAPIView(APIView):
+    permission_classes = [AllowAny]  # Jeder darf auf diesen Endpunkt zugreifen
+
     def post(self, request):
-        company_name = request.data.get("company_name")
-        email = request.data.get("email")
-        password = request.data.get("password")
-
-        if not company_name or not email or not password:
-            return Response(
-                {"error": "All fields are required."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Überprüfen, ob die Firma existiert
-        if Company.objects.filter(name=company_name).exists():
-            return Response(
-                {"error": "Company name already exists."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Benutzername prüfen und ggf. anpassen
-        original_username = company_name
-        username = original_username
-        counter = 1
-        while User.objects.filter(username=username).exists():
-            username = f"{original_username}{counter}"
-            counter += 1
-
-        try:
-            # Benutzer erstellen
-            user = User.objects.create_user(username=username, email=email, password=password)
-
-            # Firma erstellen und mit Benutzer verknüpfen
-            company = Company.objects.create(
-                name=company_name,
-                email=email,
-                password=password,
-                UID=str(uuid.uuid4()),  # Unique Identifier generieren
-                user=user,
-                total_employees=0,  # Standardwerte
-                total_income=0.00,
-                current_rank=0
-            )
-
-            return Response(
-                {"message": "Registration successful."},
-                status=status.HTTP_201_CREATED
-            )
-        except IntegrityError as e:
-            return Response(
-                {"error": f"Integrity Error: {str(e)}"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+                return Response(
+                    {"message": "Registration successful."},
+                    status=status.HTTP_201_CREATED
+                )
+            except IntegrityError as e:
+                return Response(
+                    {"error": f"Integrity Error: {str(e)}"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class RankViewSet(viewsets.ReadOnlyModelViewSet):
     """

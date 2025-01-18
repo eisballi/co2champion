@@ -31,8 +31,20 @@ export class UserService {
     }
   }
 
-  register(user: { username: string; email: string; password: string }): Observable<any> {
-    return this.http.post('/api/register/', user);
+  register(userData: {
+    company_name: string;
+    company_uid: string;
+    employee_size: number;
+    total_income: number;
+    representative: {
+      first_name: string;
+      last_name: string;
+      username: string;
+      email: string;
+      password: string;
+    };
+  }): Observable<any> {  // <-- ÄNDERN: Observable zurückgeben
+    return this.http.post('/api/register/', userData);
   }
 
   login(userData: { username: string; password: string }): void {

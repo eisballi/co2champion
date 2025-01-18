@@ -10,3 +10,4 @@ backend_co2champion/co2champion_backend/__pycache__/
 backend_co2champion/co2champion_database_app/__pycache__/
 backend_co2champion/co2champion_database_app/migrations/__pycache__/
 
+node_modules

@@ -17,6 +17,11 @@ import { routes } from '../app.routes';
   imports: [RouterModule, MatSnackBarModule, ReactiveFormsModule, MatInputModule, MatButtonModule, MatCardModule, MatIconModule, MatFormFieldModule]
 })
 export class LoginComponent {
+register() {
+throw new Error('Method not implemented.');
+}
+registerFormGroup: FormGroup<any>;
+registerFormGroup: FormGroup<any>;
 navigateToRegister() {
 throw new Error('Method not implemented.');
 }

@@ -1,4 +1,4 @@
-import datetime
+from datetime import date, timedelta
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
@@ -10,7 +10,6 @@ class Company(models.Model):
     UID = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255, unique=True)
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=255)  # In Produktion: hashed password verwenden
     total_employees = models.IntegerField()
     total_income = models.DecimalField(max_digits=15, decimal_places=2)
     current_rank = models.IntegerField()
@@ -35,28 +34,51 @@ class RankHistory(models.Model):
 
 class Goal(models.Model):
     id = models.AutoField(primary_key=True)
-    company = models.OneToOneField(Company, on_delete=models.CASCADE, related_name='goal')
-    start_emissions = models.DecimalField(max_digits=10, decimal_places=2) # Max = 9.999.999,99 Tons/Year
-    target_emissions = models.DecimalField(max_digits=10, decimal_places=2) # Max = 9.999.999,99 Tons/Year
+    company = models.OneToOneField(
+        'Company',
+        on_delete=models.CASCADE,
+        related_name='goal'
+    )
+    start_emissions = models.DecimalField(max_digits=10, decimal_places=2)
+    target_emissions = models.DecimalField(max_digits=10, decimal_places=2)
     start_date = models.DateField()
     deadline = models.DateField()
 
     def __str__(self):
         return f"Goal for {self.company.name}"
 
-    ### Hier die Regeln wie im Excel definiert einbauen (sofern hier möglich)
-    ### Vllt muss man es auch im serializer extra definieren, das muss man dann ausprobieren
     def clean(self):
-        if self.target_emissions > self.start_emissions:
-            raise ValidationError("Target-Emissions cannot be greater than Current-Emissions.")
-        if self.start_date > self.deadline:
-            raise ValidationError("Start-Date cannot be after the Deadline.")
+        # Start-Emissions >= 50 und <= 10.000.000
+        if self.start_emissions < 50 or self.start_emissions > 10_000_000:
+            raise ValidationError("Start Emissions must be between 50 and 10,000,000 tons/year.")
+
+        # Target-Emissions <= 10.000.000
+        if self.target_emissions > 10_000_000:
+            raise ValidationError("Target Emissions must be <= 10,000,000 tons/year.")
+
+        # Target mindestens 20% niedriger als Start => target <= 0.8 * start
+        if self.target_emissions > (self.start_emissions * 0.8):
+            raise ValidationError("Target must be at least 20% lower than Start Emissions.")
+
+        # Start-Date >= 1990, nicht in der Zukunft
         if self.start_date.year < 1990:
-            raise ValidationError("Start-Date cannot be after the Deadline.")
+            raise ValidationError("Start Date cannot be before 1990.")
+        if self.start_date > date.today():
+            raise ValidationError("Start Date cannot be in the future.")
+
+        # Deadline < 2150
+        if self.deadline.year >= 2150:
+            raise ValidationError("Deadline must be before the year 2150.")
+
+        # Deadline in der Zukunft und min. 6 Monate nach Start-Date
+        if self.deadline <= date.today():
+            raise ValidationError("Deadline must be in the future.")
+        min_deadline = self.start_date + timedelta(days=180)  # ~6 Monate
+        if self.deadline <= min_deadline:
+            raise ValidationError("Deadline must be at least 6 months after the Start Date.")
 
     def save(self, *args, **kwargs):
-        # Wir stellen sicher, dass `clean` immer vor dem Speichern aufgerufen wird
-        self.full_clean()  # Ruft die `clean`-Methode auf
+        self.full_clean()
         super().save(*args, **kwargs)
 
 class Report(models.Model):
