@@ -125,7 +125,7 @@ class RankViewSet(viewsets.ReadOnlyModelViewSet):
                 ),
 
                 # Score-Berechnung: alles wird in Float gecastet
-                # 50% auf progress, 30% auf employees, 20% auf income
+                # 50% auf progress, 20% auf employees, 10% auf income
                 score=(
                     Cast(F('progress'), FloatField()) * 0.7
                     + Cast(functions.Log(F('total_employees') + 1,10), FloatField()) * 0.2
