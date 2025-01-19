@@ -3,7 +3,7 @@ from django.db import IntegrityError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from co2champion_database_app.models import Company
+from co2champion_database_app.models import Company, Report
 from django.contrib.auth.models import User
 from rest_framework import viewsets, status
 from rest_framework.exceptions import PermissionDenied
@@ -140,8 +140,16 @@ class ReportViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Nur Reports der eigenen Company anzeigen
         return self.queryset.filter(company=self.request.user.company)
+
+    def perform_create(self, serializer):
+        company = self.request.user.company
+
+        # Prüfen, ob ein Goal existiert
+        if not models.Goal.objects.filter(company=company).exists():
+            raise PermissionDenied("You must set a Goal before submitting Reports.")
+
+        serializer.save(company=company)
 
     def perform_create(self, serializer):
         # Automatisch die Firma aus dem Benutzer zuweisen

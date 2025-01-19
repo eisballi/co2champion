@@ -4,6 +4,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView;
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer;
 from .models import Company
 from django.contrib.auth.models import User
+from .models import Goal
+
 
 ######## CO2CHAMPION ########
 
@@ -38,6 +40,7 @@ class GoalSerializer(serializers.ModelSerializer):
         model = models.Goal
         fields = '__all__'
         read_only_fields = ['id']
+
 
 class ReportSerializer(serializers.ModelSerializer):
     company = serializers.PrimaryKeyRelatedField(read_only=True)
