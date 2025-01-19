@@ -25,6 +25,7 @@ export class RankingComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchRankingData();
+    this.fetchUserCompany(); // Fetch the logged-in user's company
   }
 
   fetchRankingData(): void {
@@ -35,6 +36,17 @@ export class RankingComponent implements OnInit {
         this.updateRankingGraphAndTable();
       },
       error: (err) => console.error('Error fetching ranking data:', err),
+    });
+  }
+
+  fetchUserCompany(): void {
+    this.rankingService.getUserCompany().subscribe({
+      next: (data) => {
+        if (data.length > 0) {
+          this.userCompany = data[0]; // Assign the first (and only) company returned
+        }
+      },
+      error: (err) => console.error('Error fetching user company:', err),
     });
   }
 

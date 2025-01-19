@@ -1,13 +1,11 @@
-<!-- src/app/ranking/ranking.component.html -->
 <div class="ranking-page">
   <h2>CO2Champion Leaderboard</h2>
 
-    <!-- Nutze deinen neuen Selector: -->
-    <app-ranking-chart
-      [xAxisData]="top10Names"
-      [seriesData]="top10Scores">
-    </app-ranking-chart>
-
+  <!-- Ranking Chart -->
+  <app-ranking-chart
+    [xAxisData]="top10Names"
+    [seriesData]="top10Scores">
+  </app-ranking-chart>
 
   <!-- Ranking Table -->
   <h3>Ranking Table</h3>
@@ -23,7 +21,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let company of top10Companies; let i = index">
+      <tr *ngFor="let company of top10Companies; let i = index" [ngClass]="{'gold': i === 0, 'silver': i === 1, 'bronze': i === 2}">
         <td>{{ i + 1 }}</td>
         <td>{{ company.name }}</td>
         <td>{{ company.progress | number: '1.0-0' }}</td>
@@ -32,15 +30,17 @@
         <td>{{ company.score | number: '1.0-0' }}</td>
       </tr>
     </tbody>
-    <tfoot *ngIf="userCompany && !top10Companies.includes(userCompany)">
-      <tr>
-        <td>11</td>
-        <td>{{ userCompany.name }}</td>
-        <td>{{ userCompany.progress | number: '1.0-0' }}</td>
-        <td>{{ userCompany.total_employees | number: '1.0-0' }}</td>
-        <td>{{ userCompany.total_income | number: '1.0-0' }}€</td>
-        <td>{{ userCompany.score | number: '1.0-0' }}</td>
-      </tr>
-    </tfoot>
+    @if (userCompany && !top10Companies.includes(userCompany)) {
+      <tfoot>
+        <tr>
+          <td>{{ userCompany.rank }}</td>
+          <td>{{ userCompany.name }}</td>
+          <td>{{ userCompany.progress | number: '1.0-0' }}</td>
+          <td>{{ userCompany.total_employees | number: '1.0-0' }}</td>
+          <td>{{ userCompany.total_income | number: '1.0-0' }}€</td>
+          <td>{{ userCompany.score | number: '1.0-0' }}</td>
+        </tr>
+      </tfoot>
+    }
   </table>
 </div>
