@@ -6,6 +6,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { UserService } from './services/user.service';
 import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
+
 
 @Component({
   selector: 'app-root',
@@ -17,7 +19,8 @@ import { CommonModule } from '@angular/common';
     MatMenuModule,
     MatButtonModule,
     MatIcon,
-    CommonModule
+    CommonModule,
+    ReactiveFormsModule
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',

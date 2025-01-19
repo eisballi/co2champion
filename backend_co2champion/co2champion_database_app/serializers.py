@@ -2,15 +2,16 @@ from rest_framework import serializers
 from . import models
 from rest_framework_simplejwt.views import TokenObtainPairView;
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer;
-from .models import Company
 from django.contrib.auth.models import User
-from .models import Goal
 import re
 from django.db.models import Q
 from django.db import IntegrityError
-from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework import status
+from decimal import Decimal
+from .models import Goal, Company
+
+
 
 
 ######## CO2CHAMPION ########
@@ -36,16 +37,34 @@ class CompanySerializer(serializers.ModelSerializer):
 
 class GoalSerializer(serializers.ModelSerializer):
     company = serializers.PrimaryKeyRelatedField(read_only=True)
-
-    def create(self, validated_data):
-        validated_data['company'] = self.context['request'].user.company
-        return super().create(validated_data)
-
+    start_emissions = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        min_value=Decimal('50'),
+        max_value=Decimal('10000000')
+    )
+    target_emissions = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        min_value=Decimal('1'),
+        max_value=Decimal('10000000')
+    )
 
     class Meta:
-        model = models.Goal
+        model = Goal
         fields = '__all__'
         read_only_fields = ['id']
+
+    def validate_target_emissions(self, value):
+        start_emissions = self.initial_data.get('start_emissions')
+        if start_emissions is not None:
+            try:
+                start_emissions = Decimal(str(start_emissions))
+                if value > start_emissions * Decimal('0.8'):
+                    raise serializers.ValidationError("Target Emissions must be at least 20% smaller than Start Emissions.")
+            except:
+                raise serializers.ValidationError("Start Emissions must be a valid number.")
+        return value
 
 
 class ReportSerializer(serializers.ModelSerializer):

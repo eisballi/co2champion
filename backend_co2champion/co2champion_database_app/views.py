@@ -3,12 +3,14 @@ from django.db import IntegrityError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from co2champion_database_app.models import Company, Report
+from co2champion_database_app.models import Company
 from django.contrib.auth.models import User
 from rest_framework import viewsets, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from .models import Company, Goal, Report, RankHistory
+
 
 from .serializers import *
 from . import models
@@ -17,7 +19,7 @@ import uuid
 ######## CO2CHAMPION ########
 
 class RegisterAPIView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [AllowAny]  # Jeder darf auf diesen Endpunkt zugreifen
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -68,8 +70,7 @@ class RankHistoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return self.queryset.filter(company__user=self.request.user)
-
+        return self.queryset.filter(company=self.request.user.id)
 
 class CompanyViewSet(viewsets.ModelViewSet):
     queryset = models.Company.objects.all()
@@ -92,7 +93,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
 
 
 class GoalViewSet(viewsets.ModelViewSet):
-    queryset = models.Goal.objects.all()
+    queryset = Goal.objects.all()
     serializer_class = GoalSerializer
     permission_classes = [IsAuthenticated]
 
@@ -100,28 +101,39 @@ class GoalViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(company=self.request.user.company)
 
     def create(self, request, *args, **kwargs):
-        # Falls ein Ziel bereits existiert, aktualisiere es
-        if hasattr(request.user, 'company'):
-            company = request.user.company
-            existing_goal = models.Goal.objects.filter(company=company).first()
-            if existing_goal:
-                # 1) Alle Reports löschen
-                models.Report.objects.filter(company=company).delete()
+        company = request.user.company
+        existing_goal = Goal.objects.filter(company=company).first()
 
-                # 2) Dann Partial Update
-                serializer = self.get_serializer(existing_goal, data=request.data, partial=True)
-                serializer.is_valid(raise_exception=True)
-                self.perform_update(serializer)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-
-            # Neues Ziel erstellen
-            request.data['company'] = company.id
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if existing_goal:
+            serializer = self.get_serializer(existing_goal, data=request.data, partial=True)
         else:
-            raise PermissionDenied("You do not belong to any company.")
+            request.data['company'] = company.id  # ✅ Hier company setzen!
+            serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            self.perform_create(serializer) if not existing_goal else self.perform_update(serializer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED if not existing_goal else status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.company != self.request.user.company:
+            raise PermissionDenied("You are not allowed to update this goal.")
+
+        # Alle Reports löschen, wenn Goal geändert wird
+        Report.objects.filter(company=self.request.user.company).delete()
+
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.company != self.request.user.company:
+            raise PermissionDenied("You are not allowed to delete this goal.")
+        return super().destroy(request, *args, **kwargs)
 
 
 class ReportViewSet(viewsets.ModelViewSet):
@@ -130,16 +142,8 @@ class ReportViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        # Nur Reports der eigenen Company anzeigen
         return self.queryset.filter(company=self.request.user.company)
-
-    def perform_create(self, serializer):
-        company = self.request.user.company
-
-        # Prüfen, ob ein Goal existiert
-        if not models.Goal.objects.filter(company=company).exists():
-            raise PermissionDenied("You must set a Goal before submitting Reports.")
-
-        serializer.save(company=company)
 
     def perform_create(self, serializer):
         # Automatisch die Firma aus dem Benutzer zuweisen
