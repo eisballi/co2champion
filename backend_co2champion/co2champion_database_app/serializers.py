@@ -1,3 +1,4 @@
+from venv import logger
 from rest_framework import serializers
 from . import models
 from rest_framework_simplejwt.views import TokenObtainPairView;
@@ -9,7 +10,9 @@ from django.db import IntegrityError
 from rest_framework.response import Response
 from rest_framework import status
 from decimal import Decimal
-from .models import Goal, Company
+from .models import Goal, Company, Report
+import logging
+
 
 
 
@@ -67,13 +70,67 @@ class GoalSerializer(serializers.ModelSerializer):
         return value
 
 
+logger = logging.getLogger(__name__)
+
 class ReportSerializer(serializers.ModelSerializer):
     company = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
-        model = models.Report
-        fields = '__all__'
+        model = Report
+        fields = ['id', 'company', 'title', 'description', 'date', 'reduced_emissions']
         read_only_fields = ['id', 'company']
+
+    def validate_title(self, value):
+        if len(value) > 200:
+            raise serializers.ValidationError("Title cannot exceed 200 characters.")
+        return value
+
+    def validate_description(self, value):
+        if len(value) > 800:
+            raise serializers.ValidationError("Description cannot exceed 800 characters.")
+        return value
+
+    def validate_reduced_emissions(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Emissions Reduced must be positive.")
+        if value > Decimal('100000'):
+            raise serializers.ValidationError("Emissions Reduced cannot exceed 100,000 Tons/Year.")
+        return value
+
+    def validate(self, data):
+        """
+        Cross-field Validierungen:
+        - Reduced Emissions dürfen nicht größer als Start Emissions sein.
+        """
+        user = self.context['request'].user
+        company = user.company
+
+        try:
+            goal = company.goal  # Das Ziel der Firma abrufen
+        except Goal.DoesNotExist:
+            raise serializers.ValidationError("No goal set for your company.")
+
+        reduced_emissions = data.get('reduced_emissions')
+        date = data.get('date')
+
+
+        if reduced_emissions > goal.start_emissions:
+            raise serializers.ValidationError("Emissions Reduced cannot exceed Start Emissions.")
+
+        # Datum muss innerhalb der Zielperiode sein
+        if date < goal.start_date:
+            raise serializers.ValidationError("Report Date must be after the Goal's Start Date.")
+        if date > goal.deadline:
+            raise serializers.ValidationError("Report Date must be before the Goal's Deadline.")
+
+        # Set the company
+        data['company'] = company
+
+        return data
+
+    def create(self, validated_data):
+        return Report.objects.create(**validated_data)
+
 
 class RankHistorySerializer(serializers.ModelSerializer):
     company = serializers.PrimaryKeyRelatedField(queryset=models.Company.objects.all())

@@ -101,18 +101,28 @@ class GoalViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(company=self.request.user.company)
 
     def create(self, request, *args, **kwargs):
-        company = request.user.company
+        company = request.user.company  # Die Firma des Nutzers abrufen
+
+        if not company:
+            return Response({"error": "User is not associated with a company."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Prüfen, ob bereits ein Goal für die Firma existiert
         existing_goal = Goal.objects.filter(company=company).first()
 
         if existing_goal:
             serializer = self.get_serializer(existing_goal, data=request.data, partial=True)
         else:
-            request.data['company'] = company.id  # ✅ Hier company setzen!
-            serializer = self.get_serializer(data=request.data)
+            # Das company-Feld korrekt setzen, ohne request.data direkt zu verändern
+            serializer = self.get_serializer(data={**request.data, "company": company.id})
 
         if serializer.is_valid():
-            self.perform_create(serializer) if not existing_goal else self.perform_update(serializer)
-            return Response(serializer.data, status=status.HTTP_201_CREATED if not existing_goal else status.HTTP_200_OK)
+            if existing_goal:
+                self.perform_update(serializer)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                serializer.save(company=company)  # ✅ Company explizit übergeben!
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -137,7 +147,7 @@ class GoalViewSet(viewsets.ModelViewSet):
 
 
 class ReportViewSet(viewsets.ModelViewSet):
-    queryset = models.Report.objects.all()
+    queryset = Report.objects.all()
     serializer_class = ReportSerializer
     permission_classes = [IsAuthenticated]
 
@@ -146,29 +156,18 @@ class ReportViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(company=self.request.user.company)
 
     def perform_create(self, serializer):
-        # Automatisch die Firma aus dem Benutzer zuweisen
-        if not hasattr(self.request.user, 'company'):
-            raise PermissionDenied("You do not belong to any company.")
-        serializer.save(company=self.request.user.company)
-
-
-    def create(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            raise PermissionDenied("User is not authenticated.")
-        if not hasattr(request.user, 'company'):
-            raise PermissionDenied("User does not belong to any company.")
-        return super().create(request, *args, **kwargs)
-
-    def update(self, request, pk):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data)
-        serializer.is_valid(raise_exception=True)
+        # Die Logik zur Zuweisung von company wird im Serializer gehandhabt
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
-def destroy(self, request, *args, **kwargs):
-    # Löschen wird erlaubt, aber nur für die eigene Company
-    instance = self.get_object()
-    if instance.company.id != request.user.company.id:
-        raise PermissionDenied("You are not allowed to update this goal.")
-    return super().destroy(request, *args, **kwargs)
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Sicherstellen, dass der Report zur eigenen Company gehört
+        if instance.company != request.user.company:
+            raise PermissionDenied("You are not allowed to update this report.")
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.company != request.user.company:
+            raise PermissionDenied("You are not allowed to delete this report.")
+        return super().destroy(request, *args, **kwargs)
