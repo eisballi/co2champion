@@ -18,6 +18,7 @@ from .models import RankHistory
 from django.db.models.functions import Cast
 from django.utils.timezone import now
 from django.db.models.functions import Cast, Coalesce
+from django.db.models import functions
 
 
 
@@ -126,9 +127,9 @@ class RankViewSet(viewsets.ReadOnlyModelViewSet):
                 # Score-Berechnung: alles wird in Float gecastet
                 # 50% auf progress, 30% auf employees, 20% auf income
                 score=(
-                    Cast(F('progress'), FloatField()) * 0.5
-                    + Cast(F('total_employees'), FloatField()) * 0.3
-                    + Cast(F('total_income'), FloatField()) * 0.2
+                    Cast(F('progress'), FloatField()) * 0.7
+                    + Cast(functions.Log(F('total_employees') + 1,10), FloatField()) * 0.2
+                    + Cast(functions.Log(F('total_income') + 1,10), FloatField()) * 0.1
                 ),
             )
             .order_by('-score')
@@ -157,7 +158,7 @@ class RankHistoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return self.queryset.filter(company=self.request.user.id)
+        return self.queryset.filter(company__user=self.request.user)
 
 class CompanyViewSet(viewsets.ModelViewSet):
     queryset = models.Company.objects.all()

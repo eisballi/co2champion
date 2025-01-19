@@ -17,6 +17,8 @@
         <th>Rank</th>
         <th>Company</th>
         <th>Progress (%)</th>
+        <th>Employees</th>
+        <th>Income</th>
         <th>Score</th>
       </tr>
     </thead>
@@ -25,6 +27,8 @@
         <td>{{ i + 1 }}</td>
         <td>{{ company.name }}</td>
         <td>{{ company.progress | number: '1.0-0' }}</td>
+        <td>{{ company.total_employees | number: '1.0-0' }}</td>
+        <td>{{ company.total_income | number: '1.0-0' }}€</td>
         <td>{{ company.score | number: '1.0-0' }}</td>
       </tr>
     </tbody>
@@ -33,6 +37,8 @@
         <td>11</td>
         <td>{{ userCompany.name }}</td>
         <td>{{ userCompany.progress | number: '1.0-0' }}</td>
+        <td>{{ userCompany.total_employees | number: '1.0-0' }}</td>
+        <td>{{ userCompany.total_income | number: '1.0-0' }}€</td>
         <td>{{ userCompany.score | number: '1.0-0' }}</td>
       </tr>
     </tfoot>
