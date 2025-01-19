@@ -68,7 +68,8 @@ class RankHistoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return self.queryset.filter(company=self.request.user.id)
+        return self.queryset.filter(company__user=self.request.user)
+
 
 class CompanyViewSet(viewsets.ModelViewSet):
     queryset = models.Company.objects.all()
