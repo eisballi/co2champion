@@ -17,6 +17,7 @@ from django.db.models.functions import Cast
 from .models import RankHistory
 from django.db.models.functions import Cast
 from django.utils.timezone import now
+from django.db.models.functions import Cast, Coalesce
 
 
 
@@ -88,30 +89,50 @@ class RankPagination(PageNumberPagination):
 class RankViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CompanySerializer
     permission_classes = [AllowAny]
+    pagination_class = RankPagination
 
     def get_queryset(self):
         today = datetime.date.today()
 
-        # Fortschritt berechnen
-        companies = Company.objects.annotate(
-            total_reduced_emissions=Sum('reports__reduced_emissions'),
-            progress=Case(
-                When(
-                    Q(goal__start_emissions__gt=F('goal__target_emissions')) & Q(total_reduced_emissions__isnull=False),
-                    then=(
-                        Cast(F('total_reduced_emissions'), FloatField()) /
-                        (Cast(F('goal__start_emissions'), FloatField()) - Cast(F('goal__target_emissions'), FloatField()))
-                    ) * 100.0
+        companies = (
+            Company.objects
+            .annotate(
+                # Um sicherzugehen, dass die Reports-Summe nicht Decimals mischt,
+                # casten wir "reports__reduced_emissions" zu Float.
+                # Coalesce wandelt None zu 0.0 (float).
+                total_reduced_emissions=Coalesce(
+                    Sum(Cast('reports__reduced_emissions', FloatField())),
+                    0.0,
+                    output_field=FloatField()
                 ),
-                default=0.0,
-                output_field=FloatField(),
-            ),
-            score=(
-                Cast(F('total_employees'), FloatField()) * 0.3 +
-                Cast(F('total_income'), FloatField()) * 0.2 +
-                Cast(F('progress'), FloatField()) * 0.5
+
+                # Progress in %
+                progress=Case(
+                    When(
+                        Q(goal__isnull=False) &
+                        Q(goal__start_emissions__gt=F('goal__target_emissions')),
+                        then=(
+                            Cast(F('total_reduced_emissions'), FloatField()) /
+                            (
+                                Cast(F('goal__start_emissions'), FloatField()) -
+                                Cast(F('goal__target_emissions'), FloatField())
+                            )
+                        ) * 100.0
+                    ),
+                    default=0.0,
+                    output_field=FloatField(),
+                ),
+
+                # Score-Berechnung: alles wird in Float gecastet
+                # 50% auf progress, 30% auf employees, 20% auf income
+                score=(
+                    Cast(F('progress'), FloatField()) * 0.5
+                    + Cast(F('total_employees'), FloatField()) * 0.3
+                    + Cast(F('total_income'), FloatField()) * 0.2
+                ),
             )
-        ).order_by('-score')
+            .order_by('-score')
+        )
 
         # Rank zuweisen
         for rank, company in enumerate(companies, start=1):
@@ -128,7 +149,6 @@ class RankViewSet(viewsets.ReadOnlyModelViewSet):
                 print(f"Validation error for company {company.name}: {e}")
 
         return companies
-
 
     
 class RankHistoryViewSet(viewsets.ModelViewSet):

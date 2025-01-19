@@ -1,21 +1,23 @@
+// src/app/ranking/ranking.component.ts
 import { Component, OnInit } from '@angular/core';
-import { RankingService } from '../services/ranking.service';
 import { CommonModule } from '@angular/common';
 import { DashboardLineChartComponent } from '../dashboard-progress-chart/dashboard-progress-chart.component';
+import { RankingService } from '../services/ranking.service';
+import { RankingChartComponent } from '../ranking-chart/ranking-chart.component';
 
 @Component({
   selector: 'app-ranking',
   standalone: true,
-  imports: [CommonModule, DashboardLineChartComponent],
+  imports: [CommonModule, RankingChartComponent],
   templateUrl: './ranking.component.html',
-  styleUrl: './ranking.component.scss'
+  styleUrls: ['./ranking.component.scss']
 })
 export class RankingComponent implements OnInit {
   rankingData: any[] = [];
   top10Companies: any[] = [];
   userCompany: any | null = null;
 
-  // Pre-calculated arrays for graph
+  // For the chart
   top10Names: string[] = [];
   top10Scores: number[] = [];
 
@@ -28,7 +30,8 @@ export class RankingComponent implements OnInit {
   fetchRankingData(): void {
     this.rankingService.getRanking().subscribe({
       next: (data) => {
-        this.rankingData = data;
+        // Wichtig: "data.results" ist das eigentliche Array
+        this.rankingData = data.results; 
         this.updateRankingGraphAndTable();
       },
       error: (err) => console.error('Error fetching ranking data:', err),
@@ -36,13 +39,17 @@ export class RankingComponent implements OnInit {
   }
 
   private updateRankingGraphAndTable(): void {
+    // Nimm die ersten 10 Einträge als Top 10
     this.top10Companies = this.rankingData.slice(0, 10);
+
+    // Optional: der 11. Eintrag könnte "deine" Firma sein, wenn du das willst.
     this.userCompany = this.rankingData.length > 10 ? this.rankingData[10] : null;
+
     this.top10Names = this.top10Companies.map((c) => c.name);
     this.top10Scores = this.top10Companies.map((c) => c.score);
 
     // Runde die Fortschrittswerte
-    this.top10Companies.forEach(company => {
+    this.top10Companies.forEach((company) => {
       company.progress = Math.round(company.progress); // Ganze Zahlen
     });
 
