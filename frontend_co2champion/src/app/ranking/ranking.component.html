@@ -1,38 +1,37 @@
 <div class="ranking-page">
-    <h2>Top 10 Ranking</h2>
-  
-    <!-- Ranking Graph -->
-    <div class="ranking-graph">
-      <app-line-chart [xAxisData]="top10Names" [seriesData]="top10Scores"></app-line-chart>
-    </div>
-  
-    <!-- Ranking Table -->
-    <h3>Ranking Table</h3>
-    <table class="ranking-table">
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Company</th>
-          <th>Progress (%)</th>
-          <th>Score</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let company of top10Companies; let i = index">
-          <td>{{ i + 1 }}</td>
-          <td>{{ company.name }}</td>
-          <td>{{ company.progress | number: '1.0-2' }}</td>
-          <td>{{ company.score | number: '1.0-2' }}</td>
-        </tr>
-      </tbody>
-      <tfoot *ngIf="userCompany && !top10Companies.includes(userCompany)">
-        <tr>
-          <td>11</td>
-          <td>{{ userCompany.name }}</td>
-          <td>{{ userCompany.progress | number: '1.0-2' }}</td>
-          <td>{{ userCompany.score | number: '1.0-2' }}</td>
-        </tr>
-      </tfoot>
-    </table>
+  <h2>Top 10 Ranking</h2>
+
+  <!-- Ranking Graph -->
+  <div class="ranking-graph">
+    <app-line-chart [xAxisData]="top10Names" [seriesData]="top10Scores"></app-line-chart>
   </div>
-  
+
+  <!-- Ranking Table -->
+  <h3>Ranking Table</h3>
+  <table class="ranking-table">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Company</th>
+        <th>Progress (%)</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let company of top10Companies; let i = index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ company.name }}</td>
+        <td>{{ company.progress | number: '1.0-0' }}</td> <!-- Ganze Zahlen -->
+        <td>{{ company.score | number: '1.0-2' }}</td>
+      </tr>
+    </tbody>
+    <tfoot *ngIf="userCompany && !top10Companies.includes(userCompany)">
+      <tr>
+        <td>11</td>
+        <td>{{ userCompany.name }}</td>
+        <td>{{ userCompany.progress | number: '1.0-0' }}</td> <!-- Ganze Zahlen -->
+        <td>{{ userCompany.score | number: '1.0-2' }}</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>

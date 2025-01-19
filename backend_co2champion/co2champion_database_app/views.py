@@ -1,5 +1,7 @@
+import datetime
 from django.db.models import Q
 from django.db import IntegrityError
+from django.forms import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -9,9 +11,14 @@ from rest_framework import viewsets, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.db.models import Sum, F, Case, When, Value, FloatField, Q
+from django.db.models import Sum, F, Case, When, Value, FloatField, Q, OuterRef, Subquery
 from rest_framework.pagination import PageNumberPagination
 from django.db.models.functions import Cast
+from .models import RankHistory
+from django.db.models.functions import Cast
+from django.utils.timezone import now
+
+
 
 
 
@@ -77,37 +84,51 @@ class RegisterAPIView(APIView):
 class RankPagination(PageNumberPagination):
     page_size = 10  # Show top 10 companies per page
 
-from django.db.models.functions import Cast
 
 class RankViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CompanySerializer
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        companies = models.Company.objects.annotate(
+        today = datetime.date.today()
+
+        # Fortschritt berechnen
+        companies = Company.objects.annotate(
+            total_reduced_emissions=Sum('reports__reduced_emissions'),
             progress=Case(
                 When(
-                    goal__start_emissions__gt=F('goal__target_emissions'),
+                    Q(goal__start_emissions__gt=F('goal__target_emissions')) & Q(total_reduced_emissions__isnull=False),
                     then=(
-                        (Cast(F('goal__start_emissions'), FloatField()) - Cast(F('goal__target_emissions'), FloatField())) /
-                        Cast(F('goal__start_emissions'), FloatField()) * Value(100.0, output_field=FloatField())
-                    )
+                        Cast(F('total_reduced_emissions'), FloatField()) /
+                        (Cast(F('goal__start_emissions'), FloatField()) - Cast(F('goal__target_emissions'), FloatField()))
+                    ) * 100.0
                 ),
-                default=Value(0.0, output_field=FloatField()),
+                default=0.0,
                 output_field=FloatField(),
             ),
             score=(
-                Cast(F('progress'), FloatField()) * Value(0.5, output_field=FloatField()) +
-                Cast(F('total_employees'), FloatField()) * Value(0.3, output_field=FloatField()) +
-                Cast(F('total_income'), FloatField()) * Value(0.2, output_field=FloatField())
-            ),
-            total_reduction=Sum(
-                'reports__reduced_emissions',
-                output_field=FloatField()  # Explicitly set output_field
+                Cast(F('total_employees'), FloatField()) * 0.3 +
+                Cast(F('total_income'), FloatField()) * 0.2 +
+                Cast(F('progress'), FloatField()) * 0.5
             )
         ).order_by('-score')
 
-        return companies[:10]  # Top 10 companies by score
+        # Rank zuweisen
+        for rank, company in enumerate(companies, start=1):
+            company.current_rank = rank
+            company.save()
+
+            try:
+                RankHistory.objects.update_or_create(
+                    company=company,
+                    date=today,
+                    defaults={'rank': rank}
+                )
+            except ValidationError as e:
+                print(f"Validation error for company {company.name}: {e}")
+
+        return companies
+
 
     
 class RankHistoryViewSet(viewsets.ModelViewSet):
