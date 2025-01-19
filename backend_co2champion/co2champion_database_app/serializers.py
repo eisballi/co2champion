@@ -5,6 +5,12 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer;
 from .models import Company
 from django.contrib.auth.models import User
 from .models import Goal
+import re
+from django.db.models import Q
+from django.db import IntegrityError
+from rest_framework import serializers
+from rest_framework.response import Response
+from rest_framework import status
 
 
 ######## CO2CHAMPION ########
@@ -78,47 +84,58 @@ class RepresentativeSerializer(serializers.Serializer):
 class RegisterSerializer(serializers.Serializer):
     company_name = serializers.CharField(max_length=255)
     company_uid = serializers.CharField(max_length=20)
-    employee_size = serializers.IntegerField(min_value=1)
-    total_income = serializers.DecimalField(max_digits=15, decimal_places=2)
+    employee_size = serializers.IntegerField(min_value=4)
+    total_income = serializers.DecimalField(max_digits=15, decimal_places=2, min_value=5000)
     representative = RepresentativeSerializer()
 
     def validate_company_name(self, value):
+        if not re.match(r"^[A-Za-z0-9 &]+$", value):
+            raise serializers.ValidationError(
+                "Company name can only contain letters, numbers, spaces, and '&'."
+            )
         if Company.objects.filter(name=value).exists():
             raise serializers.ValidationError("Company name already exists.")
         return value
 
+    # >>>>>> NEU: company_uid validieren <<<<<<
+    def validate_company_uid(self, value):
+        """
+        Prüft, ob die UID bereits existiert.
+        """
+        if Company.objects.filter(UID=value).exists():
+            raise serializers.ValidationError("UID already exists.")
+        return value
+    # >>>>>> ENDE NEU <<<<<<
+
     def create(self, validated_data):
         rep_data = validated_data.pop('representative')
+
+        # Unternehmensdaten
         company_name = validated_data['company_name']
         company_uid = validated_data['company_uid']
         employee_size = validated_data['employee_size']
         total_income = validated_data['total_income']
+
+        # Repräsentant-Daten
         rep_first_name = rep_data['first_name']
         rep_last_name = rep_data['last_name']
         rep_username = rep_data['username']
         rep_email = rep_data['email']
         rep_password = rep_data['password']
 
-        # Überprüfe und passe den Benutzernamen an, falls erforderlich
-        username = rep_username
-        counter = 1
-        while User.objects.filter(username=username).exists():
-            username = f"{rep_username}{counter}"
-            counter += 1
-
-        # Erstelle den Benutzer
+        # Neuen User anlegen
         user = User.objects.create_user(
-            username=username,
+            username=rep_username,
             email=rep_email,
             password=rep_password,
             first_name=rep_first_name,
             last_name=rep_last_name
         )
 
-        # Erstelle die Firma und verknüpfe sie mit dem Benutzer
+        # Firma anlegen und mit User verknüpfen
         company = Company.objects.create(
             name=company_name,
-            UID=company_uid,
+            UID=company_uid,          # <--- Hier
             email=rep_email,
             user=user,
             total_employees=employee_size,

@@ -27,8 +27,7 @@ import { UserService } from '../services/user.service';
 export class RegisterComponent implements OnInit {
 
   registerFormGroup!: FormGroup;
-  generatedUsername: string = '';
-  submitted = false;
+  submitted = false;  // kannst du nutzen, falls du etwas anderes daraus ableiten willst
 
   constructor(
     private fb: FormBuilder,
@@ -40,22 +39,18 @@ export class RegisterComponent implements OnInit {
   ngOnInit(): void {
     this.registerFormGroup = this.fb.group(
       {
-        // ==============
-        // Company Fields
-        // ==============
         company_name: [
           '',
           [
             Validators.required,
-            // Nur Buchstaben und Zahlen, 2-50 Zeichen
-            Validators.pattern('^[A-Za-z0-9]{2,50}$')
+            // Beispielsweise nur Buchstaben, Zahlen, Leerzeichen, & (2-50 Zeichen)
+            Validators.pattern('^[A-Za-z0-9 &]{2,50}$')
           ]
         ],
         company_uid: [
           '',
           [
             Validators.required,
-            // Nur Großbuchstaben und Zahlen, 8-15 Zeichen
             Validators.pattern('^[A-Z0-9]{8,15}$')
           ]
         ],
@@ -63,7 +58,6 @@ export class RegisterComponent implements OnInit {
           '',
           [
             Validators.required,
-            // Mitarbeiter > 3
             Validators.min(4)
           ]
         ],
@@ -75,14 +69,10 @@ export class RegisterComponent implements OnInit {
           ]
         ],
 
-        // ========================
-        // Representative Fields
-        // ========================
         rep_first_name: [
           '',
           [
             Validators.required,
-            // Nur Buchstaben, 2-50 Zeichen
             Validators.pattern('^[A-Za-z]{2,50}$')
           ]
         ],
@@ -90,11 +80,18 @@ export class RegisterComponent implements OnInit {
           '',
           [
             Validators.required,
-            // Nur Buchstaben, 2-50 Zeichen
             Validators.pattern('^[A-Za-z]{2,50}$')
           ]
         ],
-        username: [{ value: '', disabled: true }, [Validators.required]],
+
+        // Username: nur Kleinbuchstaben + Ziffern, 3-30 Zeichen
+        username: [
+          '',
+          [
+            Validators.required,
+            Validators.pattern('^[a-z0-9]{3,30}$')
+          ]
+        ],
         email: [
           '',
           [
@@ -102,21 +99,17 @@ export class RegisterComponent implements OnInit {
             Validators.email
           ]
         ],
-
-        // ========================
-        // Password Fields
-        // ========================
         password: [
           '',
           [
             Validators.required,
-            // Min. 8 Zeichen, mind. 1 Groß, 1 Klein, 1 Ziffer, 1 Sonderzeichen
-            Validators.pattern(
-              '^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,}$'
-            )
+            Validators.pattern('^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,}$')
           ]
         ],
-        confirm_password: ['', [Validators.required]]
+        confirm_password: [
+          '',
+          [Validators.required]
+        ]
       },
       {
         validators: this.passwordMatchValidator
@@ -124,9 +117,7 @@ export class RegisterComponent implements OnInit {
     );
   }
 
-  /**
-   * Custom Validator: Check, ob password und confirm_password übereinstimmen
-   */
+  // Custom Validator: prüft, ob password == confirm_password
   passwordMatchValidator(formGroup: FormGroup) {
     const password = formGroup.get('password')?.value;
     const confirmPassword = formGroup.get('confirm_password')?.value;
@@ -137,26 +128,7 @@ export class RegisterComponent implements OnInit {
   }
 
   /**
-   * Generiert den Username aus dem Company Name
-   */
-  generateUsername(): void {
-    const companyNameControl = this.registerFormGroup.get('company_name');
-    if (!companyNameControl) return;
-
-    const rawCompanyName = companyNameControl.value || '';
-    // Nur alphanumerisch und klein geschrieben, '_' für alle nicht Buchstaben/Zahlen
-    const sanitized = rawCompanyName
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '_')
-      .replace(/_+/g, '_');
-
-    this.generatedUsername = sanitized;
-    // Da das Feld disabled ist, patchen wir den Wert mithilfe patchValue
-    this.registerFormGroup.patchValue({ username: this.generatedUsername });
-  }
-
-  /**
-   * Kurzer Check, ob Feld ungültig ist
+   * Check, ob ein Feld ungültig ist
    */
   isFieldInvalid(fieldName: string): boolean {
     const control = this.registerFormGroup.get(fieldName);
@@ -164,62 +136,43 @@ export class RegisterComponent implements OnInit {
   }
 
   /**
-   * Error-Message-Handler
+   * Zeigt Fehlertexte an
    */
   getErrorMessage(fieldName: string): string {
     const control = this.registerFormGroup.get(fieldName);
     if (!control || !control.errors) return '';
 
-    // Alle möglichen Fehler
+    // Falls wir via setErrors({ serverError: '...' }) gesetzt haben
+    if (control.errors['serverError']) {
+      return control.errors['serverError'];
+    }
+
+    // Standardfehler
     const errors = control.errors;
     if (errors['required']) {
-      // Benutzerdefinierte Meldungen je nach Feld
-      switch (fieldName) {
-        case 'company_name':
-          return 'Please enter a company name.';
-        case 'company_uid':
-          return 'Please enter a valid Company UID.';
-        case 'employee_size':
-          return 'Number of employees is required.';
-        case 'total_income':
-          return 'Annual income is required.';
-        case 'rep_first_name':
-          return 'First name is required.';
-        case 'rep_last_name':
-          return 'Last name is required.';
-        case 'username':
-          return 'Username is required.'; // Theoretisch nie leereingabe, da generiert
-        case 'email':
-          return 'Email is required.';
-        case 'password':
-          return 'Password is required.';
-        case 'confirm_password':
-          return 'Please confirm your password.';
-      }
+      return 'This field is required.';
     }
     if (errors['pattern']) {
-      switch (fieldName) {
-        case 'company_name':
-          return 'Company name must be 2-50 letters/digits, no special characters.';
-        case 'company_uid':
-          return 'UID must be 8-15 uppercase letters/digits only.';
-        case 'rep_first_name':
-          return 'First name must be 2-50 letters only.';
-        case 'rep_last_name':
-          return 'Last name must be 2-50 letters only.';
-        case 'password':
-          return 'Password must have min 8 chars, at least one uppercase, one lowercase, one digit, and one special character.';
+      if (fieldName === 'username') {
+        return 'Username must be lowercase letters & digits only (3-30 chars).';
       }
+      if (fieldName === 'company_name') {
+        return 'Letters, digits, spaces & (2-50 chars).';
+      }
+      if (fieldName === 'company_uid') {
+        return 'UID must be 8-15 uppercase letters/digits.';
+      }
+      // ...
     }
     if (errors['email']) {
       return 'Please enter a valid email address.';
     }
     if (errors['min']) {
       if (fieldName === 'employee_size') {
-        return 'Number of employees must be at least 4.';
+        return 'Employees must be >= 4.';
       }
       if (fieldName === 'total_income') {
-        return 'Annual income must be at least 5000.';
+        return 'Annual income must be >= 5000.';
       }
     }
     if (errors['passwordMismatch']) {
@@ -234,19 +187,17 @@ export class RegisterComponent implements OnInit {
   onRegister(): void {
     this.submitted = true;
 
-    // Wenn Formular ungültig: Fehler markieren + Meldung ausgeben
+    // Falls Formular ungültig -> Meldung
     if (this.registerFormGroup.invalid) {
-      this.registerFormGroup.markAllAsTouched();
       this.snackBar.open('Please correct the errors in the form.', 'Close', {
         duration: 3000
       });
       return;
     }
 
-    // Formular ist gültig -> Daten absenden
+    // Formularwerte holen
     const rawData = this.registerFormGroup.getRawValue();
-    // Da username disabled war, müssen wir ihn ggf. aus generatedUsername ziehen
-    // (getRawValue() enthält disabled Felder, also sollte es passen)
+
     const formData = {
       company_name: rawData.company_name,
       company_uid: rawData.company_uid,
@@ -255,12 +206,13 @@ export class RegisterComponent implements OnInit {
       representative: {
         first_name: rawData.rep_first_name,
         last_name: rawData.rep_last_name,
-        username: rawData.username, // auto generiert
+        username: rawData.username,
         email: rawData.email,
         password: rawData.password
       }
     };
 
+    // Request an dein Backend
     this.userService.register(formData).subscribe({
       next: () => {
         this.snackBar.open(
@@ -270,19 +222,71 @@ export class RegisterComponent implements OnInit {
         );
         this.router.navigate(['/login']);
       },
-      error: (error) => {
-        this.snackBar.open(
-          error?.error?.message || 'Registration failed. Please try again.',
-          'Close',
-          { duration: 5000 }
-        );
+      error: (err) => {
+        if (err?.status === 400 && err?.error) {
+          // Serverseitige Validierungsfehler -> Felder zuordnen
+          this.processServerValidationErrors(err.error);
+        } else {
+          this.snackBar.open(
+            'Registration failed. Please try again.',
+            'Close',
+            { duration: 5000 }
+          );
+        }
       }
     });
   }
 
   /**
-   * Zur Login-Seite zurückkehren
+   * Verteilt Serverfehler an die jeweiligen Felder
+   * Beispiel-JSON vom Server könnte sein:
+   * {
+   *   "company_uid": ["UID already exists."],
+   *   "representative": {
+   *       "username": ["Username already exists."],
+   *       "email": ["Email already exists."]
+   *   }
+   * }
    */
+  processServerValidationErrors(validationErrors: any): void {
+    // Falls UID schon vergeben
+    if (validationErrors.company_uid) {
+      this.registerFormGroup
+        .get('company_uid')
+        ?.setErrors({ serverError: validationErrors.company_uid[0] });
+    }
+
+    // Falls CompanyName schon vergeben
+    if (validationErrors.company_name) {
+      this.registerFormGroup
+        .get('company_name')
+        ?.setErrors({ serverError: validationErrors.company_name[0] });
+    }
+
+    // Verschachtelt: representative.username
+    if (validationErrors.representative) {
+      const repErrors = validationErrors.representative;
+
+      // Falls Username schon vergeben
+      if (repErrors.username) {
+        this.registerFormGroup
+          .get('username')
+          ?.setErrors({ serverError: repErrors.username[0] });
+      }
+
+      // Falls Email schon vergeben
+      if (repErrors.email) {
+        this.registerFormGroup
+          .get('email')
+          ?.setErrors({ serverError: repErrors.email[0] });
+      }
+
+      // Wenn du noch first_name, last_name etc. abfangen willst:
+      // if (repErrors.first_name) { ... }
+      // if (repErrors.last_name) { ... }
+    }
+  }
+
   goToLogin(): void {
     this.router.navigate(['/login']);
   }

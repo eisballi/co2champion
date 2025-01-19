@@ -17,7 +17,7 @@ import uuid
 ######## CO2CHAMPION ########
 
 class RegisterAPIView(APIView):
-    permission_classes = [AllowAny]  # Jeder darf auf diesen Endpunkt zugreifen
+    permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -96,7 +96,6 @@ class GoalViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Nur Goals der eigenen Company anzeigen
         return self.queryset.filter(company=self.request.user.company)
 
     def create(self, request, *args, **kwargs):
@@ -105,6 +104,10 @@ class GoalViewSet(viewsets.ModelViewSet):
             company = request.user.company
             existing_goal = models.Goal.objects.filter(company=company).first()
             if existing_goal:
+                # 1) Alle Reports löschen
+                models.Report.objects.filter(company=company).delete()
+
+                # 2) Dann Partial Update
                 serializer = self.get_serializer(existing_goal, data=request.data, partial=True)
                 serializer.is_valid(raise_exception=True)
                 self.perform_update(serializer)
@@ -118,20 +121,6 @@ class GoalViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             raise PermissionDenied("You do not belong to any company.")
-
-    def update(self, request, *args, **kwargs):
-        # Nur das eigene Goal darf geändert werden
-        instance = self.get_object()
-        if instance.company.id != request.user.company.id:
-            raise PermissionDenied("You are not allowed to update this goal.")
-        return super().update(request, *args, **kwargs)
-
-    def destroy(self, request, *args, **kwargs):
-        # Löschen wird erlaubt, aber nur für die eigene Company
-        instance = self.get_object()
-        if instance.company.id != request.user.company.id:
-            raise PermissionDenied("You are not allowed to update this goal.")
-        return super().destroy(request, *args, **kwargs)
 
 
 class ReportViewSet(viewsets.ModelViewSet):
