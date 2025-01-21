@@ -1,62 +1,122 @@
-<div class="set-goal-container">
+<div class="container mt-5">
   <h1>Set or Change Your CO₂ Goal</h1>
 
-  <form [formGroup]="goalFormGroup" (ngSubmit)="onSubmit()">
-    <div class="form-group">
-      <label for="start_emissions">Start Emissions</label>
+  <form [formGroup]="goalFormGroup" (ngSubmit)="onSubmit()" novalidate>
+    <!-- Start Emissions -->
+    <div class="form-group mb-3">
+      <label for="start_emissions">Start Emissions (Tons/Year)</label>
       <input
         id="start_emissions"
         type="number"
         formControlName="start_emissions"
-        placeholder="e.g. 1000 tons per year"
+        class="form-control"
+        placeholder="e.g. 1000"
+        [ngClass]="{
+          'is-invalid': goalFormGroup.get('start_emissions')?.invalid && (goalFormGroup.get('start_emissions')?.touched || goalFormGroup.get('start_emissions')?.dirty)
+        }"
       />
-      <div *ngIf="goalFormGroup.get('start_emissions')?.hasError('required')">
+      <div class="invalid-feedback" *ngIf="goalFormGroup.get('start_emissions')?.errors?.['required']">
         Start Emissions are required.
+      </div>
+      <div class="invalid-feedback" *ngIf="goalFormGroup.get('start_emissions')?.errors?.['min']">
+        Start Emissions must be at least 50 Tons/Year.
+      </div>
+      <div class="invalid-feedback" *ngIf="goalFormGroup.get('start_emissions')?.errors?.['max']">
+        Start Emissions cannot exceed 10,000,000 Tons/Year.
       </div>
     </div>
 
-    <div class="form-group">
-      <label for="target_emissions">Target Emissions</label>
+    <!-- Target Emissions -->
+    <div class="form-group mb-3">
+      <label for="target_emissions">Target Emissions (Tons/Year)</label>
       <input
         id="target_emissions"
         type="number"
         formControlName="target_emissions"
-        placeholder="e.g. 500 tons per year"
+        class="form-control"
+        placeholder="e.g. 500"
+        [ngClass]="{
+          'is-invalid': goalFormGroup.get('target_emissions')?.invalid && (goalFormGroup.get('target_emissions')?.touched || goalFormGroup.get('target_emissions')?.dirty)
+        }"
       />
-      <div *ngIf="goalFormGroup.get('target_emissions')?.hasError('targetTooHigh')">
-        Target emissions must be lower than start emissions.
+      <div class="invalid-feedback" *ngIf="goalFormGroup.get('target_emissions')?.errors?.['required']">
+        Target Emissions are required.
       </div>
-      <div *ngIf="goalFormGroup.get('target_emissions')?.hasError('targetTooLow')">
-        Target emissions must be at least half of the start emissions.
+      <div class="invalid-feedback" *ngIf="goalFormGroup.get('target_emissions')?.errors?.['min']">
+        Target Emissions must be at least 1 Tons/Year.
+      </div>
+      <div class="invalid-feedback" *ngIf="goalFormGroup.get('target_emissions')?.errors?.['max']">
+        Target Emissions cannot exceed 10,000,000 Tons/Year.
+      </div>
+      <div class="invalid-feedback" *ngIf="goalFormGroup.get('target_emissions')?.errors?.['targetTooHigh']">
+        Target Emissions must be at least 20% smaller than Start Emissions.
       </div>
     </div>
 
-    <div class="form-group">
+    <!-- Start Date -->
+    <div class="form-group mb-3">
       <label for="start_date">Start Date</label>
-      <input id="start_date" type="date" formControlName="start_date" />
-      <div *ngIf="goalFormGroup.get('start_date')?.hasError('invalidStartDate')">
-        Start date must be today or later.
+      <input
+        id="start_date"
+        type="date"
+        formControlName="start_date"
+        class="form-control"
+        [ngClass]="{
+          'is-invalid': goalFormGroup.get('start_date')?.invalid && (goalFormGroup.get('start_date')?.touched || goalFormGroup.get('start_date')?.dirty)
+        }"
+      />
+      <div class="invalid-feedback" *ngIf="goalFormGroup.get('start_date')?.errors?.['required']">
+        Start Date is required.
+      </div>
+      <div class="invalid-feedback" *ngIf="goalFormGroup.get('start_date')?.errors?.['invalidStartDateBefore1990']">
+        Start Date cannot be before the year 1990.
+      </div>
+      <div class="invalid-feedback" *ngIf="goalFormGroup.get('start_date')?.errors?.['invalidStartDateFuture']">
+        Start Date cannot be in the future.
       </div>
     </div>
 
-    <div class="form-group">
+    <!-- Deadline -->
+    <div class="form-group mb-3">
       <label for="deadline">Deadline</label>
-      <input id="deadline" type="date" formControlName="deadline" />
-      <div *ngIf="goalFormGroup.get('deadline')?.hasError('invalidDeadline')">
-        Deadline must be after the start date.
+      <input
+        id="deadline"
+        type="date"
+        formControlName="deadline"
+        class="form-control"
+        [ngClass]="{
+          'is-invalid': goalFormGroup.get('deadline')?.invalid && (goalFormGroup.get('deadline')?.touched || goalFormGroup.get('deadline')?.dirty)
+        }"
+      />
+      <div class="invalid-feedback" *ngIf="goalFormGroup.get('deadline')?.errors?.['required']">
+        Deadline is required.
+      </div>
+      <div class="invalid-feedback" *ngIf="goalFormGroup.get('deadline')?.errors?.['deadlineNotInFuture']">
+        Deadline must be in the future.
+      </div>
+      <div class="invalid-feedback" *ngIf="goalFormGroup.get('deadline')?.errors?.['deadlineAfter2150']">
+        Deadline must be before the year 2150.
+      </div>
+      <div class="invalid-feedback" *ngIf="goalFormGroup.get('deadline')?.errors?.['deadlineLessThan6Months']">
+        Deadline must be at least 6 months after Start Date.
+      </div>
+      <div class="invalid-feedback" *ngIf="goalFormGroup.get('deadline')?.errors?.['deadlineBeforeStartDate']">
+        Deadline must be after Start Date.
       </div>
     </div>
 
-    <button type="submit" class="btn">
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary">
       {{ isGoalSet ? 'Update Goal' : 'Set Goal' }}
     </button>
   </form>
 
-  <div *ngIf="currentGoal">
+  <!-- Aktuelles Ziel anzeigen -->
+  <div *ngIf="currentGoal" class="mt-5">
     <h2>Your Current Goal</h2>
-    <p>Start Emissions: {{ currentGoal.start_emissions }} tons</p>
-    <p>Target Emissions: {{ currentGoal.target_emissions }} tons</p>
-    <p>Start Date: {{ currentGoal.start_date }}</p>
-    <p>Deadline: {{ currentGoal.deadline }}</p>
+    <p><strong>Start Emissions:</strong> {{ currentGoal.start_emissions }} tons</p>
+    <p><strong>Target Emissions:</strong> {{ currentGoal.target_emissions }} tons</p>
+    <p><strong>Start Date:</strong> {{ currentGoal.start_date }}</p>
+    <p><strong>Deadline:</strong> {{ currentGoal.deadline }}</p>
   </div>
 </div>

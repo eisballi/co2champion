@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "ng2-validation": "^4.2.0",
+    "ngx-custom-validators": "^11.0.1"
+  }
+}

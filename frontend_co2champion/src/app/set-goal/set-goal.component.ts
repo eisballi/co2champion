@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormControl, Validators, ValidationErrors, AbstractControl, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormControl, Validators, ValidationErrors, AbstractControl, ReactiveFormsModule, ValidatorFn } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { GoalService } from '../services/goal.service';
 import { GoalModel } from '../interfaces/goal.model';
@@ -20,20 +20,22 @@ export class SetGoalComponent implements OnInit {
     this.goalFormGroup = new FormGroup({
       start_emissions: new FormControl<number | null>(null, [
         Validators.required,
-        Validators.min(1)
+        Validators.min(50),
+        Validators.max(10000000)
       ]),
       target_emissions: new FormControl<number | null>(null, [
         Validators.required,
         Validators.min(1),
-        this.targetGreaterThanStartValidator.bind(this)
+        Validators.max(10000000),
+        this.targetGreaterThanStartValidator()
       ]),
       start_date: new FormControl<string | null>(null, [
         Validators.required,
-        this.startDateValidator
+        this.startDateValidator()
       ]),
       deadline: new FormControl<string | null>(null, [
         Validators.required,
-        this.endDateValidator.bind(this)
+        this.deadlineValidator()
       ])
     });
   }
@@ -49,8 +51,8 @@ export class SetGoalComponent implements OnInit {
           this.currentGoal = goals[0];
           this.isGoalSet = true;
           this.goalFormGroup.patchValue({
-            start_emissions: this.currentGoal.start_emissions,
-            target_emissions: this.currentGoal.target_emissions,
+            start_emissions: Number(this.currentGoal.start_emissions),
+            target_emissions: Number(this.currentGoal.target_emissions),
             start_date: this.currentGoal.start_date,
             deadline: this.currentGoal.deadline,
           });
@@ -61,81 +63,135 @@ export class SetGoalComponent implements OnInit {
       },
       error: (err) => console.error('Failed to load goal:', err),
     });
-}
-
-
-  private targetGreaterThanStartValidator(control: AbstractControl): ValidationErrors | null {
-    const target = control.value;
-    const start = this.goalFormGroup?.get('start_emissions')?.value;
-
-    if (start == null || target == null) return null;
-
-    if (target >= start) {
-      return { targetTooHigh: true };
-    }
-    if (target > start / 2) {
-      return { targetTooLow: true };
-    }
-    return null;
   }
 
-  private startDateValidator(control: AbstractControl): ValidationErrors | null {
-    const today = new Date().setHours(0, 0, 0, 0); // Heute, Mitternacht
-    const startDate = new Date(control.value).setHours(0, 0, 0, 0);
+  // Validator: Target Emissions mindestens 20% kleiner als Start Emissions
+  private targetGreaterThanStartValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const target = control.value;
+      const start = this.goalFormGroup?.get('start_emissions')?.value;
 
-    if (isNaN(startDate) || startDate < today) {
-      return { invalidStartDate: true };
-    }
-    return null;
-  }
+      if (start == null || target == null) return null;
 
-  private endDateValidator(control: AbstractControl): ValidationErrors | null {
-    const startDate = this.goalFormGroup?.get('start_date')?.value;
-    const deadline = new Date(control.value).setHours(0, 0, 0, 0);
-
-    if (!startDate || isNaN(deadline)) {
-      return null;
-    }
-
-    const startDateParsed = new Date(startDate).setHours(0, 0, 0, 0);
-
-    if (deadline <= startDateParsed) {
-      return { invalidDeadline: true };
-    }
-    return null;
-  }
-
-    onSubmit(): void {
-      if (this.goalFormGroup.valid) {
-          const goalData: GoalModel = this.goalFormGroup.value;
-
-          if (this.isGoalSet && this.currentGoal) {
-              // Update Goal
-              this.goalService.updateGoal(this.currentGoal.id, goalData).subscribe({
-                  next: () => {
-                      alert('Goal updated successfully!');
-                      this.loadCurrentGoal();
-                  },
-                  error: (err) => {
-                      alert('Failed to update goal: ' + err.message);
-                  },
-              });
-          } else {
-              // Create Goal
-              this.goalService.createGoal(goalData).subscribe({
-                  next: (response) => {
-                      alert('Goal created successfully!');
-                      this.isGoalSet = true;
-                      this.currentGoal = response;
-                      this.loadCurrentGoal();
-                  },
-                  error: (err) => {
-                      alert('Failed to create goal: ' + err.message);
-                  },
-              });
-          }
-      } else {
-          alert('Please fill out all required fields!');
+      if (target > start * 0.8) {
+        return { targetTooHigh: true };
       }
+      return null;
+    };
+  }
+
+  // Validator: Start Date nach 1990 und nicht in der Zukunft
+  private startDateValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const inputDate = new Date(control.value);
+      const today = new Date();
+      const minDate = new Date('1990-01-01');
+
+      if (isNaN(inputDate.getTime())) {
+        return { invalidStartDate: true };
+      }
+
+      if (inputDate < minDate) {
+        return { invalidStartDateBefore1990: true };
+      }
+
+      if (inputDate > today) {
+        return { invalidStartDateFuture: true };
+      }
+
+      return null;
+    };
+  }
+
+  // Validator: Deadline vor 2150, in der Zukunft, und mindestens 6 Monate nach Start Date
+  private deadlineValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const deadlineDate = new Date(control.value);
+      const today = new Date();
+      const maxDate = new Date('2149-12-31'); // Vor 2150
+
+      const startDateControl = this.goalFormGroup?.get('start_date');
+      if (!startDateControl) {
+        return null;
+      }
+
+      const startDate = new Date(startDateControl.value);
+
+      if (isNaN(deadlineDate.getTime())) {
+        return { invalidDeadline: true };
+      }
+
+      if (deadlineDate <= today) {
+        return { deadlineNotInFuture: true };
+      }
+
+      if (deadlineDate > maxDate) {
+        return { deadlineAfter2150: true };
+      }
+
+      // Mindestens 6 Monate nach Start Date
+      const sixMonthsAfterStart = new Date(startDate);
+      sixMonthsAfterStart.setMonth(sixMonthsAfterStart.getMonth() + 6);
+
+      if (deadlineDate < sixMonthsAfterStart) {
+        return { deadlineLessThan6Months: true };
+      }
+
+      // Deadline muss nach Start Date sein
+      if (deadlineDate <= startDate) {
+        return { deadlineBeforeStartDate: true };
+      }
+
+      return null;
+    };
+  }
+
+  onSubmit(): void {
+    if (this.goalFormGroup.valid) {
+      const goalData: GoalModel = {
+        ...this.goalFormGroup.value,
+        start_emissions: this.goalFormGroup.value.start_emissions!.toString(),
+        target_emissions: this.goalFormGroup.value.target_emissions!.toString(),
+      };
+
+      if (this.isGoalSet && this.currentGoal) {
+        // Update Goal
+        this.goalService.updateGoal(this.currentGoal.id, goalData).subscribe({
+          next: () => {
+            alert('Goal updated successfully!');
+            this.loadCurrentGoal();
+          },
+          error: (err) => {
+            if (err.error) {
+              const errorMessages = Object.values(err.error).flat().join(' ');
+              alert('Failed to update goal: ' + errorMessages);
+            } else {
+              alert('Failed to update goal: ' + err.message);
+            }
+          },
+        });
+      } else {
+        // Create Goal
+        this.goalService.createGoal(goalData).subscribe({
+          next: (response) => {
+            alert('Goal created successfully!');
+            this.isGoalSet = true;
+            this.currentGoal = response;
+            this.loadCurrentGoal();
+          },
+          error: (err) => {
+            if (err.error) {
+              const errorMessages = Object.values(err.error).flat().join(' ');
+              alert('Failed to create goal: ' + errorMessages);
+            } else {
+              alert('Failed to create goal: ' + err.message);
+            }
+          },
+        });
+      }
+    } else {
+      this.goalFormGroup.markAllAsTouched();
+      alert('Please fix the errors in the form before submitting.');
+    }
   }
 }

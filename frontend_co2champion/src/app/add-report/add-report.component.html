@@ -1,46 +1,106 @@
-<div class="add-report-page">
-  <div class="add-report-form-container">
-    <h2 class="form-title">Add New Report</h2>
-    <form [formGroup]="reportFormGroup" (ngSubmit)="onSubmit()" class="form">
-      <div class="form-group">
-        <label class="form-label">Title</label>
-        <input
-          type="text"
-          formControlName="title"
-          class="form-input"
-          placeholder="Enter the report title"
-          required
-        />
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h2 class="mb-0">Add New Report</h2>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="reportFormGroup" (ngSubmit)="onSubmit()" novalidate>
+            <!-- Title -->
+            <div class="form-group mb-3">
+              <label for="title" class="form-label">Title</label>
+              <input
+                type="text"
+                id="title"
+                formControlName="title"
+                class="form-control"
+                placeholder="Enter the report title"
+                [ngClass]="{'is-invalid': isFieldInvalid('title')}"
+                required
+              />
+              <div *ngIf="isFieldInvalid('title')" class="invalid-feedback">
+                <div *ngIf="reportFormGroup.get('title')?.hasError('required')">
+                  Title is required.
+                </div>
+                <div *ngIf="reportFormGroup.get('title')?.hasError('maxlength')">
+                  Title cannot exceed 200 characters.
+                </div>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea
+                id="description"
+                formControlName="description"
+                class="form-control"
+                placeholder="Enter a description"
+                [ngClass]="{'is-invalid': isFieldInvalid('description')}"
+                required
+              ></textarea>
+              <div *ngIf="isFieldInvalid('description')" class="invalid-feedback">
+                <div *ngIf="reportFormGroup.get('description')?.hasError('required')">
+                  Description is required.
+                </div>
+                <div *ngIf="reportFormGroup.get('description')?.hasError('maxlength')">
+                  Description cannot exceed 800 characters.
+                </div>
+              </div>
+            </div>
+
+            <!-- Reduced Emissions -->
+            <div class="form-group mb-3">
+              <label for="reduced_emissions" class="form-label">Reduced Emissions (Tons)</label>
+              <input
+                type="number"
+                id="reduced_emissions"
+                formControlName="reduced_emissions"
+                class="form-control"
+                placeholder="Enter reduced emissions"
+                [ngClass]="{'is-invalid': isFieldInvalid('reduced_emissions')}"
+                required
+              />
+              <div *ngIf="isFieldInvalid('reduced_emissions')" class="invalid-feedback">
+                <div *ngIf="reportFormGroup.get('reduced_emissions')?.hasError('required')">
+                  Reduced Emissions are required.
+                </div>
+                <div *ngIf="reportFormGroup.get('reduced_emissions')?.hasError('min')">
+                  Reduced Emissions must be positive.
+                </div>
+                <div *ngIf="reportFormGroup.get('reduced_emissions')?.hasError('max')">
+                  Reduced Emissions cannot exceed 100,000 Tons/Year.
+                </div>
+              </div>
+            </div>
+
+            <!-- Date -->
+            <div class="form-group mb-3">
+              <label for="date" class="form-label">Date</label>
+              <input
+                type="date"
+                id="date"
+                formControlName="date"
+                class="form-control"
+                [ngClass]="{'is-invalid': isDateInvalid()}"
+                required
+              />
+              <div *ngIf="isDateInvalid()" class="invalid-feedback">
+                <div *ngIf="reportFormGroup.get('date')?.hasError('required')">
+                  Date is required.
+                </div>
+                <div *ngIf="reportFormGroup.hasError('invalidDate')">
+                  Invalid date selected.
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary w-100">Submit Report</button>
+          </form>
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Description</label>
-        <textarea
-          formControlName="description"
-          class="form-input"
-          placeholder="Enter a description"
-          required
-        ></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Reduced Emissions (Tons)</label>
-        <input
-          type="number"
-          formControlName="reduced_emissions"
-          class="form-input"
-          placeholder="Enter reduced emissions"
-          required
-        />
-      </div>
-      <div class="form-group">
-        <label class="form-label">Date</label>
-        <input
-          type="date"
-          formControlName="date"
-          class="form-input"
-          required
-        />
-      </div>
-      <button type="submit" class="form-button">Submit Report</button>
-    </form>
+    </div>
   </div>
 </div>
