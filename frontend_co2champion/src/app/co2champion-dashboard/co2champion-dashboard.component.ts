@@ -49,7 +49,7 @@ import { RankHistoryModel } from '../interfaces/rank-history.model';
   templateUrl: './co2champion-dashboard.component.html',
   styleUrl: './co2champion-dashboard.component.scss',
   providers: [
-    provideEchartsCore({ echarts }),
+    provideEchartsCore({ echarts }), DatePipe
   ]
 })
 export class Co2championDashboardComponent implements OnInit, OnDestroy {
@@ -79,7 +79,10 @@ export class Co2championDashboardComponent implements OnInit, OnDestroy {
   constructor(
     private reportService: ReportService,
     private goalService: GoalService,
-    private rankHistoryService: RankHistoryService) { }
+    private rankHistoryService: RankHistoryService,
+    private datePipe: DatePipe // <--- hinzufügen
+  ) { }
+    
 
   ngOnInit(): void {
     this.reportService.getReports().subscribe((reports) => {
@@ -139,5 +142,69 @@ export class Co2championDashboardComponent implements OnInit, OnDestroy {
       alert('Report deleted');
       this.ngOnInit();
     });
+  }
+
+  exportReports(): void {
+    // 1) Daten aus der TableDataSource holen
+    const reports = this.reportsDataSource.data; // ReportModel[]
+
+    // 2) CSV-String erstellen
+    const csvContent = this.generateCSV(reports);
+
+    // 3) Datei-Download anstoßen
+    this.downloadCSV(csvContent, 'reports_export.csv');
+  }
+
+  /**
+   * Erzeugt aus einem Array von ReportModel einen CSV-String.
+   */
+  private generateCSV(data: ReportModel[]): string {
+    const headers = ['Title', 'Description', 'Date', 'Reduced Emissions'];
+  
+    const rows = data.map(report => {
+      // Date zu String konvertieren
+      const formattedDate = report.date ? this.datePipe.transform(report.date, 'yyyy-MM-dd') : '';
+      return [
+        this.escapeCSV(report.title),
+        this.escapeCSV(report.description),
+        this.escapeCSV(formattedDate),
+        this.escapeCSV(report.reduced_emissions.toString()),
+      ].join(',');
+    });
+  
+    return [headers.join(','), ...rows].join('\r\n');
+  }
+
+  /**
+   * Startet den Download einer CSV-Datei mit dem übergebenen Inhalt.
+   */
+  private downloadCSV(csvData: string, filename: string): void {
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+
+    // HTML-Element <a> erstellen, das den Download triggert
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  /**
+   * Hilfsmethode, um Kommas, Anführungszeichen etc. in CSV-Zellen richtig zu maskieren.
+   */
+  private escapeCSV(value: string | null | undefined): string {
+    if (!value) return '';
+    // Doppelte Anführungszeichen innerhalb des Textes doppelt maskieren
+    const escapedValue = value.replace(/"/g, '""');
+    // Falls Value ein Komma oder Anführungszeichen enthält, mit Anführungszeichen umschließen
+    if (escapedValue.search(/("|,|\n)/g) >= 0) {
+      return `"${escapedValue}"`;
+    }
+    return escapedValue;
   }
 }
