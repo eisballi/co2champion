@@ -42,6 +42,11 @@ class RegisterAPIView(APIView):
                 )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class RankPagination(PageNumberPagination):
+    page_size = 10  # Show top 10 companies per page
+
+
 class RankViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CompanySerializer
     permission_classes = [AllowAny]
@@ -112,7 +117,7 @@ class RankHistoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return self.queryset.filter(company=self.request.user.id)
+        return self.queryset.filter(company__user=self.request.user.id)
 
 class CompanyViewSet(viewsets.ModelViewSet):
     queryset = models.Company.objects.all()
