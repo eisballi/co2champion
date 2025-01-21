@@ -1,15 +1,20 @@
-from django.db.models import Q
+import datetime
+from django.db.models import Q, Sum, F, Case, When, Value, FloatField, OuterRef, Subquery
 from django.db import IntegrityError
+from django.forms import ValidationError
+from django.utils.timezone import now
+from django.db.models.functions import Cast, Coalesce
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.pagination import PageNumberPagination
 from co2champion_database_app.models import Company
 from django.contrib.auth.models import User
-from rest_framework import viewsets, status
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Company, Goal, Report, RankHistory
+from django.db.models import functions
+
 
 
 from .serializers import *
@@ -38,31 +43,68 @@ class RegisterAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class RankViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    API ViewSet, das alle Companies anzeigt, die von jedem gesehen werden können.
-    """
     serializer_class = CompanySerializer
-    permission_classes = [AllowAny]  # Jeder darf lesen
-    queryset = models.Company.objects.all()
+    permission_classes = [AllowAny]
+    pagination_class = RankPagination
 
     def get_queryset(self):
-        """
-        Liefert die Top 10 Firmen zurück
-        und fügt die eigene Firma als 11. hinzu, falls der Nutzer angemeldet ist
-        und sie nicht bereits unter den Top 10 ist.
-        """
+        today = datetime.date.today()
 
-        # Hole die obersten 10 Firmen, geordnet nach dem Rang
-        # Angenommen das der Rank ausserhalb bestimmt wird, sonst hier den Algo-Aufruf
-        top_companies = models.Company.objects.all().order_by('current_rank')[:10]
+        companies = (
+            Company.objects
+            .annotate(
+                # Um sicherzugehen, dass die Reports-Summe nicht Decimals mischt,
+                # casten wir "reports__reduced_emissions" zu Float.
+                # Coalesce wandelt None zu 0.0 (float).
+                total_reduced_emissions=Coalesce(
+                    Sum(Cast('reports__reduced_emissions', FloatField())),
+                    0.0,
+                    output_field=FloatField()
+                ),
 
-        # 11te Company wenn User nicht unter Top 10
-        if self.user.is_authenticated:
-            company = self.queryset.filter(id=self.request.user.id)
-            if company not in top_companies:
-                top_companies.append(company)
+                # Progress in %
+                progress=Case(
+                    When(
+                        Q(goal__isnull=False) &
+                        Q(goal__start_emissions__gt=F('goal__target_emissions')),
+                        then=(
+                            Cast(F('total_reduced_emissions'), FloatField()) /
+                            (
+                                Cast(F('goal__start_emissions'), FloatField()) -
+                                Cast(F('goal__target_emissions'), FloatField())
+                            )
+                        ) * 100.0
+                    ),
+                    default=0.0,
+                    output_field=FloatField(),
+                ),
 
-        return Response(CompanySerializer(top_companies, many=True).data)
+                # Score-Berechnung: alles wird in Float gecastet
+                # 50% auf progress, 20% auf employees, 10% auf income
+                score=(
+                    Cast(F('progress'), FloatField()) * 0.7
+                    + Cast(functions.Log(F('total_employees') + 1,10), FloatField()) * 0.2
+                    + Cast(functions.Log(F('total_income') + 1,10), FloatField()) * 0.1
+                ),
+            )
+            .order_by('-score')
+        )
+
+        # Rank zuweisen
+        for rank, company in enumerate(companies, start=1):
+            company.current_rank = rank
+            company.save()
+
+            try:
+                RankHistory.objects.update_or_create(
+                    company=company,
+                    date=today,
+                    defaults={'rank': rank}
+                )
+            except ValidationError as e:
+                print(f"Validation error for company {company.name}: {e}")
+
+        return companies
 
 class RankHistoryViewSet(viewsets.ModelViewSet):
     queryset = models.RankHistory.objects.all()
