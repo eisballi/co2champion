@@ -11,6 +11,8 @@
   <button mat-button routerLink="/gdpr"><mat-icon>security</mat-icon>GDPR</button>
   @if (userService.isLoggedInSignal()) {
     <button mat-button (click)="logout()"><mat-icon>done</mat-icon>Log Out</button>
+  } @else {
+    <button mat-button routerLink="/login"><mat-icon>login</mat-icon>Log In</button>
   }
   </mat-toolbar>
 
