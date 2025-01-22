@@ -29,8 +29,17 @@ class RankHistory(models.Model):
     date = models.DateField()
 
     def clean(self):
-        if RankHistory.objects.filter(company=self.company, date=self.date).exists():
-            raise ValidationError("Es existiert bereits ein RankHistory-Eintrag für dieses Datum und diese Company.")
+        qs = RankHistory.objects.filter(company=self.company, date=self.date)
+        # Wenn dieses Objekt schon existiert (self.pk != None),
+        # schließen wir uns selbst aus, damit kein vermeintliches Duplikat festgestellt wird.
+        if self.pk:
+            qs = qs.exclude(pk=self.pk)
+
+        if qs.exists():
+            raise ValidationError(
+                "Es existiert bereits ein RankHistory-Eintrag "
+                "für dieses Datum und diese Company."
+            )
 
     def save(self, *args, **kwargs):
         self.full_clean()

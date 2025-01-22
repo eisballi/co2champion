@@ -123,8 +123,38 @@ class CompanyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Nur die eigene Company abrufen
-        return self.queryset.filter(id=self.request.user.id)
+        # Die Annotation identisch wie im RankViewSet
+        return (
+            self.queryset
+            .annotate(
+                total_reduced_emissions=Coalesce(
+                    Sum(Cast('reports__reduced_emissions', FloatField())),
+                    0.0,
+                    output_field=FloatField()
+                ),
+                progress=Case(
+                    When(
+                        Q(goal__isnull=False) &
+                        Q(goal__start_emissions__gt=F('goal__target_emissions')),
+                        then=(
+                            Cast(F('total_reduced_emissions'), FloatField())
+                            / (
+                                Cast(F('goal__start_emissions'), FloatField())
+                                - Cast(F('goal__target_emissions'), FloatField())
+                            )
+                        ) * 100.0
+                    ),
+                    default=0.0,
+                    output_field=FloatField()
+                ),
+                score=(
+                    Cast(F('progress'), FloatField()) * 0.7
+                    + Cast(functions.Log(F('total_employees') + 1, 10), FloatField()) * 0.2
+                    + Cast(functions.Log(F('total_income') + 1, 10), FloatField()) * 0.1
+                ),
+            )
+            .filter(user=self.request.user)
+        )
 
     def update(self, request, *args, **kwargs):
         # Nur die eigene Company darf ihre Daten ändern

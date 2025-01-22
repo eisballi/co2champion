@@ -1,13 +1,11 @@
 <div class="ranking-page">
   <h2>CO2Champion Leaderboard</h2>
 
-  <!-- Ranking Chart -->
   <app-ranking-chart
     [xAxisData]="top10Names"
     [seriesData]="top10Scores">
   </app-ranking-chart>
 
-  <!-- Ranking Table -->
   <h3>Ranking Table</h3>
   <table class="ranking-table">
     <thead>
@@ -16,7 +14,7 @@
         <th>Company</th>
         <th>Progress (%)</th>
         <th>Employees</th>
-        <th>Income</th>
+        <th>Yearly Income</th>
         <th>Score</th>
       </tr>
     </thead>
@@ -30,17 +28,15 @@
         <td>{{ company.score | number: '1.0-0' }}</td>
       </tr>
     </tbody>
-    @if (userCompany && !top10Companies.includes(userCompany)) {
-      <tfoot>
-        <tr>
-          <td>{{ userCompany.rank }}</td>
-          <td>{{ userCompany.name }}</td>
-          <td>{{ userCompany.progress | number: '1.0-0' }}</td>
-          <td>{{ userCompany.total_employees | number: '1.0-0' }}</td>
-          <td>{{ userCompany.total_income | number: '1.0-0' }}€</td>
-          <td>{{ userCompany.score | number: '1.0-0' }}</td>
-        </tr>
-      </tfoot>
-    }
+    <tfoot *ngIf="isLoggedIn && userCompany?.current_rank > 10">
+      <tr class="highlighted">
+        <td>{{ userCompany.current_rank }}</td>
+        <td>{{ userCompany.name }}</td>
+        <td>{{ userCompany.progress | number: '1.0-0' }}</td>
+        <td>{{ userCompany.total_employees | number: '1.0-0' }}</td>
+        <td>{{ userCompany.total_income | number: '1.0-0' }} €</td>
+        <td>{{ userCompany.score | number: '1.0-0' }}</td>
+      </tr>
+    </tfoot>    
   </table>
 </div>

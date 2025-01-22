@@ -32,6 +32,9 @@ class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
 class CompanySerializer(serializers.ModelSerializer):
+    progress = serializers.FloatField(read_only=True)
+    score = serializers.FloatField(read_only=True)
+    total_reduction = serializers.FloatField(read_only=True)
 
     class Meta:
         model = models.Company
