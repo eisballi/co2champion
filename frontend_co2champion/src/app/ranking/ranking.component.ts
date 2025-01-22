@@ -2,8 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RankingChartComponent } from '../ranking-chart/ranking-chart.component';
 import { RankingService } from '../services/ranking.service';
-import { UserService } from '../services/user.service'; // Ändern Sie diesen Import
-
+import { UserService } from '../services/user.service'; 
 @Component({
   selector: 'app-ranking',
   standalone: true,
@@ -22,11 +21,11 @@ export class RankingComponent implements OnInit {
 
   constructor(
     private rankingService: RankingService,
-    private userService: UserService // Ändern Sie diesen Service
+    private userService: UserService 
   ) {}
 
   ngOnInit(): void {
-    this.isLoggedIn = this.userService.isLoggedInSignal(); // Verwenden Sie das Signal
+    this.isLoggedIn = this.userService.isLoggedInSignal(); 
     this.fetchRankingData();
   }
 
@@ -36,7 +35,7 @@ export class RankingComponent implements OnInit {
         this.rankingData = data.results;
         this.updateRankingGraphAndTable();
         if (this.isLoggedIn) {
-          this.fetchUserCompany(); // This should be called before updateRankingGraphAndTable
+          this.fetchUserCompany(); 
         }
       },
       error: (err) => console.error('Error fetching ranking data:', err),
@@ -53,7 +52,7 @@ export class RankingComponent implements OnInit {
         // company.current_rank ist vom Server vorausgefüllt:
         this.userCompany = {
           ...company,
-          rank: company.current_rank  // nur wenn du es im Template "rank" nennst
+          rank: company.current_rank  
         };
       },
       error: (err) => console.error('Error fetching user company:', err),
