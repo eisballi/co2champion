@@ -61,3 +61,18 @@ body {
     }
   }
 }
+.green-button {
+  color: white;
+  border: 1px solid #4caf50; 
+  background-color: #4caf50; 
+  font-size: 16px;
+  padding: 8px 16px;
+  border-radius: 20px; 
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.green-button:hover {
+  background-color: #45a049; 
+  border-color: #45a049;
+  transform: scale(1.05); 
+}
