@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import (
 )
 
 from co2champion_database_app.serializers import MyTokenObtainPairView
-from co2champion_database_app.views import CompanyViewSet, GoalViewSet, RankHistoryViewSet, RankViewSet, RegisterAPIView, ReportViewSet
+from co2champion_database_app.views import CompanyViewSet, GoalViewSet, RankHistoryViewSet, RankViewSet, RegisterAPIView, ReportViewSet, MyAccountView
 
 router = DefaultRouter()
 router.register(r'reports', ReportViewSet, basename='reports')
@@ -23,5 +23,7 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('register/', RegisterAPIView.as_view(), name='register'),
     path('api/register/', RegisterAPIView.as_view(), name='register'),
+    path('my-account/', MyAccountView.as_view(), name='my-account'),
+    path('api/my-account/', MyAccountView.as_view(), name='my-account'),
 ]
 

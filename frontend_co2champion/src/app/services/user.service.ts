@@ -75,4 +75,17 @@ export class UserService {
     const permissions = decodedToken?.permissions;
     return permissions ? permission in permissions : false;
    }
+
+  getMyAccount(): Observable<any> {
+    return this.http.get('/api/my-account/');
+  }
+
+  updateMyAccount(payload: any): Observable<any> {
+    // We can use PATCH for partial updates
+    return this.http.patch('/api/my-account/', payload);
+  }
+
+  deleteMyAccount(): Observable<any> {
+    return this.http.delete('/api/my-account/');
+  }
 }

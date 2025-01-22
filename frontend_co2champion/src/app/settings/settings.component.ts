@@ -9,6 +9,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 
 import { CompanyService } from '../services/company.service';
+import { UserService } from '../services/user.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 
 @Component({
   selector: 'app-settings',
@@ -23,83 +26,107 @@ import { CompanyService } from '../services/company.service';
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss'
 })
-export class SettingsComponent {
+export class SettingsComponent implements OnInit {
   settingsForm!: FormGroup;
-  companyId!: number; // We'll store the company's primary key from the backend
+  loading = false;
 
   constructor(
     private fb: FormBuilder,
-    private companyService: CompanyService,
+    private userService: UserService,
+    private snackbar: MatSnackBar,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    // Create the form structure
     this.settingsForm = this.fb.group({
-      UID: [{ value: '', disabled: true }],      // Typically read-only
-      name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],       // For demonstration
-      total_employees: [0, Validators.required],
-      total_income: [0, Validators.required]
+      first_name: ['', Validators.required],
+      last_name:  ['', Validators.required],
+      email:      ['', [Validators.required, Validators.email]],
+      company_name:     ['', Validators.required],
+      total_employees:  ['', Validators.required],
+      total_income:     ['', Validators.required],
     });
 
-    // Fetch the current user's Company
-    this.companyService.getCurrentCompany().subscribe({
-      next: (companies) => {
-        if (companies.length === 1) {
-          const c = companies[0];
-          this.companyId = c.id; // We'll use this for updates/deletes
-          this.settingsForm.patchValue({
-            UID: c.UID,
-            name: c.name,
-            email: c.email,
-            password: c.password,             // NOTE: not secure in real apps
-            total_employees: c.total_employees,
-            total_income: c.total_income
-          });
-        } else {
-          alert('Could not load your company data.');
-        }
+    this.loadAccountData();
+  }
+
+  loadAccountData(): void {
+    this.loading = true;
+    this.userService.getMyAccount().subscribe({
+      next: (data: any) => {
+        // data = { first_name, last_name, email, company_name, total_employees, total_income }
+        this.settingsForm.patchValue(data);
+        this.loading = false;
       },
       error: (err) => {
-        console.error(err);
-        alert('Error loading account information');
+        this.loading = false;
+        this.snackbar.open('Failed to load account data.', 'Close', { duration: 3000 });
       }
     });
   }
 
-  onSubmit(): void {
-    if (this.settingsForm.valid) {
-      // Grab the form data
-      const updatedData = this.settingsForm.getRawValue(); 
-      // getRawValue() also includes disabled controls like UID
-
-      // Send PUT request to /api/company/<id>/
-      this.companyService.updateCompany(this.companyId, updatedData).subscribe({
-        next: (res) => {
-          alert('Account updated successfully!');
-        },
-        error: (err) => {
-          console.error(err);
-          alert('Error updating account');
-        }
-      });
+  onSaveChanges(): void {
+    if (this.settingsForm.invalid) {
+      this.snackbar.open('Please fill all required fields.', 'Close', { duration: 3000 });
+      return;
     }
+    const formValues = this.settingsForm.value;
+
+    // formValues has shape:
+    // {
+    //   first_name, last_name, email,
+    //   company_name, total_employees, total_income
+    // }
+
+    this.userService.updateMyAccount(formValues).subscribe({
+      next: (res) => {
+        this.snackbar.open('Settings updated!', 'Close', { duration: 3000 });
+      },
+      error: (err) => {
+        this.snackbar.open('Update failed.', 'Close', { duration: 3000 });
+      }
+    });
   }
 
   onDeleteAccount(): void {
-    if (confirm('Are you sure you want to DELETE your account? This cannot be undone.')) {
-      this.companyService.deleteCompany(this.companyId).subscribe({
-        next: () => {
-          alert('Your account has been deleted. We are sorry to see you go!');
-          this.router.navigate(['/login']);
-        },
-        error: (err) => {
-          console.error(err);
-          alert('Error deleting account');
-        }
-      });
+    if (!confirm('Are you sure you want to permanently delete your account?')) {
+      return;
     }
+    this.userService.deleteMyAccount().subscribe({
+      next: () => {
+        this.snackbar.open('Account deleted!', 'Close', { duration: 3000 });
+        this.userService.logout();    // Clear token, signals, etc.
+        this.router.navigate(['/login']);  // or go to /login
+      },
+      error: () => {
+        this.snackbar.open('Delete failed.', 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    const control = this.settingsForm.get(fieldName);
+    return !!(control && control.invalid && (control.dirty || control.touched));
+  }
+  
+  getErrorMessage(fieldName: string): string {
+    const control = this.settingsForm.get(fieldName);
+    if (!control || !control.errors) return '';
+  
+    if (control.errors['required']) {
+      return 'This field is required.';
+    }
+    if (control.errors['email']) {
+      return 'Please enter a valid email address.';
+    }
+    if (control.errors['min']) {
+      if (fieldName === 'total_employees') {
+        return 'Employees must be >= 4.';
+      }
+      if (fieldName === 'total_income') {
+        return 'Annual income must be >= 5000.';
+      }
+    }
+    return 'Invalid field.';
   }
 }

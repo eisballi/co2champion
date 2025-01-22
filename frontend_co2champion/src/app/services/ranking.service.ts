@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class RankingService {
   private rankingUrl = '/api/ranking/';
-  private userCompanyUrl = '/api/company/'; // Assuming endpoint is set up
+  private userCompanyUrl = '/api/company/'; 
 
   constructor(private http: HttpClient) {}
 

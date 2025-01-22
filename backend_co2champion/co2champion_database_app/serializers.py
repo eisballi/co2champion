@@ -223,3 +223,56 @@ class RegisterSerializer(serializers.Serializer):
         )
 
         return company
+    
+class MyAccountSerializer(serializers.Serializer):
+    """
+    Combines some fields from User + Company.
+    Adjust or remove fields you don't want the user to edit directly.
+    """
+    # User fields
+    first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name = serializers.CharField(required=False, allow_blank=True)
+    email = serializers.EmailField(required=False)
+
+    # Company fields
+    company_name = serializers.CharField(source='company.name', required=False)
+    total_employees = serializers.IntegerField(source='company.total_employees', required=False)
+    total_income = serializers.DecimalField(
+        source='company.total_income',
+        max_digits=15,
+        decimal_places=2,
+        required=False
+    )
+
+    def update(self, instance, validated_data):
+        """
+        instance is the User object (request.user).
+        validated_data may contain nested 'company' data as well.
+        """
+        # Update User fields
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name  = validated_data.get('last_name', instance.last_name)
+        instance.email      = validated_data.get('email', instance.email)
+
+        # Update Company fields
+        company_data = validated_data.get('company', {})
+        if company_data and hasattr(instance, 'company'):
+            instance.company.name            = company_data.get('name', instance.company.name)
+            instance.company.total_employees = company_data.get('total_employees', instance.company.total_employees)
+            instance.company.total_income    = company_data.get('total_income', instance.company.total_income)
+            instance.company.save()
+
+        instance.save()
+        return instance
+
+    def to_representation(self, instance):
+        """ How we shape the output """
+        data = super().to_representation(instance)
+        return {
+            'first_name': instance.first_name,
+            'last_name': instance.last_name,
+            'email': instance.email,
+            'company_name': instance.company.name if hasattr(instance, 'company') else None,
+            'total_employees': instance.company.total_employees if hasattr(instance, 'company') else None,
+            'total_income': instance.company.total_income if hasattr(instance, 'company') else None
+        }

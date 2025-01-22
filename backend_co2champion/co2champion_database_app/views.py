@@ -165,6 +165,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         # Löschen wird generell nicht erlaubt
         raise PermissionDenied("Deleting a company is not allowed.")
+        
 
 
 class GoalViewSet(viewsets.ModelViewSet):
@@ -246,3 +247,39 @@ class ReportViewSet(viewsets.ModelViewSet):
         if instance.company != request.user.company:
             raise PermissionDenied("You are not allowed to delete this report.")
         return super().destroy(request, *args, **kwargs)
+    
+class MyAccountView(APIView):
+    """
+    Allows the logged-in user to:
+      - GET their user + company data
+      - PATCH/PUT to update
+      - DELETE to remove the entire account (User + Company)
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # user is request.user
+        serializer = MyAccountSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        serializer = MyAccountSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request):
+        # same logic as patch, but partial=False if you prefer strict updates
+        serializer = MyAccountSerializer(request.user, data=request.data, partial=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        user = request.user
+        if hasattr(user, 'company'):
+            user.company.delete()  # delete the associated Company
+        user.delete()             # delete the User itself
+        return Response({"detail": "Account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
