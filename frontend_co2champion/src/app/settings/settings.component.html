@@ -1,7 +1,7 @@
 <div class="container">
   <h2>Account Settings</h2>
 
-  <form [formGroup]="settingsForm" (ngSubmit)="onSaveChanges()">
+  <form [formGroup]="settingsForm" (ngSubmit)="onSaveChanges()" novalidate>
     <!-- Representative Information Section -->
     <h4>Representative Information</h4>
     <div class="row">

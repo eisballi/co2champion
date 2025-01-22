@@ -279,7 +279,10 @@ class MyAccountView(APIView):
 
     def delete(self, request):
         user = request.user
-        if hasattr(user, 'company'):
-            user.company.delete()  # delete the associated Company
-        user.delete()             # delete the User itself
-        return Response({"detail": "Account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        try:
+            if hasattr(user, 'company'):
+                user.company.delete()  # Delete the associated Company
+            user.delete()  # Delete the User itself
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

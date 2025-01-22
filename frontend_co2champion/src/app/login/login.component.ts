@@ -14,6 +14,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { UserService } from '../services/user.service';
 import { MatIconModule } from '@angular/material/icon';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -28,6 +29,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatInputModule,
     MatSnackBarModule,
     MatIconModule,
+    RouterModule,
   ],
 })
 
@@ -62,5 +64,9 @@ export class LoginComponent implements OnInit {
 
   navigateToRegister(): void {
     this.router.navigate(['/register']); // Leitet zur Registrierungsseite weiter
+  }
+
+  navigateToRanking(): void {
+    this.router.navigate(['/ranking']); 
   }
 }

@@ -17,6 +17,9 @@ import { routes } from '../app.routes';
   imports: [RouterModule, MatSnackBarModule, ReactiveFormsModule, MatInputModule, MatButtonModule, MatCardModule, MatIconModule, MatFormFieldModule]
 })
 export class LoginComponent {
+navigateToRanking() {
+throw new Error('Method not implemented.');
+}
 register() {
 throw new Error('Method not implemented.');
 }

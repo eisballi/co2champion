@@ -39,12 +39,24 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.settingsForm = this.fb.group({
-      first_name: ['', Validators.required],
-      last_name:  ['', Validators.required],
-      email:      ['', [Validators.required, Validators.email]],
-      company_name:     ['', Validators.required],
-      total_employees:  ['', Validators.required],
-      total_income:     ['', Validators.required],
+      first_name: [
+        '',
+        [Validators.required, Validators.pattern('^[A-Za-z]{2,50}$')],
+      ],
+      last_name: [
+        '',
+        [Validators.required, Validators.pattern('^[A-Za-z]{2,50}$')],
+      ],
+      email: ['', [Validators.required, Validators.email]],
+      company_name: [
+        '',
+        [Validators.required, Validators.pattern('^[A-Za-z0-9 &]{2,50}$')],
+      ],
+      total_employees: [
+        '',
+        [Validators.required, Validators.min(4)],
+      ],
+      total_income: ['', [Validators.required, Validators.min(5000)]],
     });
 
     this.loadAccountData();
@@ -54,37 +66,42 @@ export class SettingsComponent implements OnInit {
     this.loading = true;
     this.userService.getMyAccount().subscribe({
       next: (data: any) => {
-        // data = { first_name, last_name, email, company_name, total_employees, total_income }
         this.settingsForm.patchValue(data);
         this.loading = false;
       },
-      error: (err) => {
+      error: () => {
         this.loading = false;
-        this.snackbar.open('Failed to load account data.', 'Close', { duration: 3000 });
-      }
+        this.snackbar.open('Failed to load account data.', 'Close', {
+          duration: 3000,
+        });
+      },
     });
   }
 
   onSaveChanges(): void {
     if (this.settingsForm.invalid) {
-      this.snackbar.open('Please fill all required fields.', 'Close', { duration: 3000 });
+      this.snackbar.open('Please correct the errors in the form.', 'Close', {
+        duration: 3000,
+      });
       return;
     }
+
     const formValues = this.settingsForm.value;
 
-    // formValues has shape:
-    // {
-    //   first_name, last_name, email,
-    //   company_name, total_employees, total_income
-    // }
-
+    this.loading = true;
     this.userService.updateMyAccount(formValues).subscribe({
-      next: (res) => {
-        this.snackbar.open('Settings updated!', 'Close', { duration: 3000 });
+      next: () => {
+        this.snackbar.open('Settings updated successfully!', 'Close', {
+          duration: 3000,
+        });
+        this.loading = false;
       },
-      error: (err) => {
-        this.snackbar.open('Update failed.', 'Close', { duration: 3000 });
-      }
+      error: () => {
+        this.snackbar.open('Failed to update settings.', 'Close', {
+          duration: 3000,
+        });
+        this.loading = false;
+      },
     });
   }
 
@@ -92,39 +109,57 @@ export class SettingsComponent implements OnInit {
     if (!confirm('Are you sure you want to permanently delete your account?')) {
       return;
     }
+  
+    this.loading = true;
     this.userService.deleteMyAccount().subscribe({
       next: () => {
-        this.snackbar.open('Account deleted!', 'Close', { duration: 3000 });
-        this.userService.logout();    // Clear token, signals, etc.
-        this.router.navigate(['/login']);  // or go to /login
+        this.snackbar.open('Account deleted successfully!', 'Close', {
+          duration: 3000,
+        });
+        this.userService.logout(); // Clear session/token
+        this.router.navigate(['/login']);
+        this.loading = false;
       },
-      error: () => {
-        this.snackbar.open('Delete failed.', 'Close', { duration: 3000 });
-      }
+      error: (err) => {
+        console.error('Delete error:', err);
+        this.snackbar.open('Failed to delete account.', 'Close', {
+          duration: 3000,
+        });
+        this.loading = false;
+      },
     });
   }
+  
 
   isFieldInvalid(fieldName: string): boolean {
     const control = this.settingsForm.get(fieldName);
     return !!(control && control.invalid && (control.dirty || control.touched));
   }
-  
+
   getErrorMessage(fieldName: string): string {
     const control = this.settingsForm.get(fieldName);
     if (!control || !control.errors) return '';
-  
+
     if (control.errors['required']) {
       return 'This field is required.';
     }
     if (control.errors['email']) {
       return 'Please enter a valid email address.';
     }
+    if (control.errors['pattern']) {
+      if (fieldName === 'first_name' || fieldName === 'last_name') {
+        return 'Only letters (2-50 chars) are allowed.';
+      }
+      if (fieldName === 'company_name') {
+        return 'Only letters, numbers, spaces & (2-50 chars) are allowed.';
+      }
+    }
     if (control.errors['min']) {
       if (fieldName === 'total_employees') {
-        return 'Employees must be >= 4.';
+        return 'Number of employees must be at least 4.';
       }
       if (fieldName === 'total_income') {
-        return 'Annual income must be >= 5000.';
+        return 'Annual income must be at least 5000.';
       }
     }
     return 'Invalid field.';

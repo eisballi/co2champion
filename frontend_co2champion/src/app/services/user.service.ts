@@ -3,7 +3,7 @@ import { Injectable, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, map, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -85,7 +85,14 @@ export class UserService {
     return this.http.patch('/api/my-account/', payload);
   }
 
-  deleteMyAccount(): Observable<any> {
-    return this.http.delete('/api/my-account/');
+  deleteMyAccount(): Observable<void> {
+    return this.http.delete<void>('/api/my-account/', { observe: 'response' }).pipe(
+      map((response) => {
+        if (response.status === 204) {
+          return; // Success
+        }
+        throw new Error('Unexpected response status');
+      })
+    );
   }
 }
