@@ -1,19 +1,47 @@
 <mat-toolbar color="primary" class="toolbar">
   <button mat-button routerLink="/dashboard"><h3><mat-icon>supervised_user_circle</mat-icon>CO2Champion</h3></button>
   <span class="spacer"></span>
-  <button mat-button routerLink="/dashboard"><mat-icon>dashboard</mat-icon>Dashboard</button>
+
+  <!-- Deaktivierte Buttons -->
+  <button mat-button
+          [disabled]="!userService.isLoggedInSignal()"
+          routerLink="/dashboard"
+          class="disabled-button">
+    <mat-icon>dashboard</mat-icon>Dashboard
+  </button>
+
   <button mat-button routerLink="/ranking"><mat-icon>assessment</mat-icon>Ranking</button>
-  <button mat-button routerLink="/add-report"><mat-icon>note_add</mat-icon>Add Report</button>
-  <button mat-button routerLink="/set-goal"><mat-icon>ballot</mat-icon>Set Goal</button>
-  <button mat-button routerLink="/settings"><mat-icon>build</mat-icon>Settings</button>
+
+  <button mat-button
+          [disabled]="!userService.isLoggedInSignal()"
+          routerLink="/add-report"
+          class="disabled-button">
+    <mat-icon>note_add</mat-icon>Add Report
+  </button>
+
+  <button mat-button
+          [disabled]="!userService.isLoggedInSignal()"
+          routerLink="/set-goal"
+          class="disabled-button">
+    <mat-icon>ballot</mat-icon>Set Goal
+  </button>
+
+  <button mat-button
+          [disabled]="!userService.isLoggedInSignal()"
+          routerLink="/settings"
+          class="disabled-button">
+    <mat-icon>build</mat-icon>Settings
+  </button>
+
   <span class="spacer"></span>
   <button mat-button routerLink="/imprint"><mat-icon>info</mat-icon>Imprint</button>
   <button mat-button routerLink="/gdpr"><mat-icon>security</mat-icon>GDPR</button>
+
   @if (userService.isLoggedInSignal()) {
     <button mat-button (click)="logout()"><mat-icon>done</mat-icon>Log Out</button>
   } @else {
     <button mat-button routerLink="/login"><mat-icon>login</mat-icon>Log In</button>
   }
-  </mat-toolbar>
+</mat-toolbar>
 
 <router-outlet></router-outlet>

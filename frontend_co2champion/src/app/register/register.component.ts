@@ -44,7 +44,7 @@ export class RegisterComponent implements OnInit {
           [
             Validators.required,
             // Beispielsweise nur Buchstaben, Zahlen, Leerzeichen, & (2-50 Zeichen)
-            Validators.pattern('^[A-Za-z0-9 &]{2,50}$')
+            Validators.pattern('^(?=.*[^\\s].*[^\\s])[A-Za-z0-9 &]{2,50}$')
           ]
         ],
         company_uid: [
@@ -73,14 +73,14 @@ export class RegisterComponent implements OnInit {
           '',
           [
             Validators.required,
-            Validators.pattern('^[A-Za-z]{2,50}$')
+            Validators.pattern('^[A-Za-zÄÖÜäöüß]{2,50}$')
           ]
         ],
         rep_last_name: [
           '',
           [
             Validators.required,
-            Validators.pattern('^[A-Za-z]{2,50}$')
+            Validators.pattern('^[A-Za-zÄÖÜäöüß]{2,50}$')
           ]
         ],
 
@@ -121,9 +121,12 @@ export class RegisterComponent implements OnInit {
   passwordMatchValidator(formGroup: FormGroup) {
     const password = formGroup.get('password')?.value;
     const confirmPassword = formGroup.get('confirm_password')?.value;
+
     if (password && confirmPassword && password !== confirmPassword) {
+      formGroup.get('confirm_password')?.setErrors({ passwordMismatch: true });
       return { passwordMismatch: true };
     }
+    formGroup.get('confirm_password')?.setErrors(null);
     return null;
   }
 
@@ -133,6 +136,23 @@ export class RegisterComponent implements OnInit {
   isFieldInvalid(fieldName: string): boolean {
     const control = this.registerFormGroup.get(fieldName);
     return !!(control && control.invalid && (control.dirty || control.touched));
+  }
+
+  private getPasswordErrors(): string[] {
+    const errors: string[] = [];
+    const passwordControl = this.registerFormGroup.get('password');
+
+    if (!passwordControl?.value) return errors;
+
+    const value = passwordControl.value;
+
+    if (!/[A-Z]/.test(value)) errors.push('at least one uppercase letter');
+    if (!/[a-z]/.test(value)) errors.push('at least one lowercase letter');
+    if (!/\d/.test(value)) errors.push('at least one number');
+    if (!/[!@#$%^&*]/.test(value)) errors.push('at least one special character');
+    if (value.length < 8) errors.push('minimum 8 characters');
+
+    return errors;
   }
 
   /**
@@ -153,8 +173,11 @@ export class RegisterComponent implements OnInit {
       return 'This field is required.';
     }
     if (errors['pattern']) {
+      if (fieldName === 'rep_first_name' || fieldName === 'rep_last_name') {
+        return 'Only letters are allowed (2-50 characters)';
+      }
       if (fieldName === 'username') {
-        return 'Username must be lowercase letters & digits only (3-30 chars).';
+        return 'Lowercase letters & numbers only (3-30 chars)';
       }
       if (fieldName === 'company_name') {
         return 'Letters, digits, spaces & (2-50 chars).';
@@ -162,7 +185,6 @@ export class RegisterComponent implements OnInit {
       if (fieldName === 'company_uid') {
         return 'UID must be 8-15 uppercase letters/digits.';
       }
-      // ...
     }
     if (errors['email']) {
       return 'Please enter a valid email address.';
@@ -173,6 +195,12 @@ export class RegisterComponent implements OnInit {
       }
       if (fieldName === 'total_income') {
         return 'Annual income must be >= 5000.';
+      }
+    }
+    if (fieldName === 'password') {
+      const errors = this.getPasswordErrors();
+      if (errors.length > 0) {
+        return 'Password requires: ' + errors.join(', ');
       }
     }
     if (errors['passwordMismatch']) {

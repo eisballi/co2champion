@@ -47,7 +47,10 @@ export class SettingsComponent implements OnInit {
         '',
         [Validators.required, Validators.pattern('^[A-Za-z]{2,50}$')],
       ],
+      // Entferntes E-Mail-Feld
+      /*
       email: ['', [Validators.required, Validators.email]],
+      */
       company_name: [
         '',
         [Validators.required, Validators.pattern('^[A-Za-z0-9 &]{2,50}$')],
@@ -66,7 +69,9 @@ export class SettingsComponent implements OnInit {
     this.loading = true;
     this.userService.getMyAccount().subscribe({
       next: (data: any) => {
-        this.settingsForm.patchValue(data);
+        // Entferne das E-Mail-Feld aus den gepatchten Daten, falls vorhanden
+        const { email, ...rest } = data;
+        this.settingsForm.patchValue(rest);
         this.loading = false;
       },
       error: () => {
@@ -130,7 +135,6 @@ export class SettingsComponent implements OnInit {
     });
   }
   
-
   isFieldInvalid(fieldName: string): boolean {
     const control = this.settingsForm.get(fieldName);
     return !!(control && control.invalid && (control.dirty || control.touched));

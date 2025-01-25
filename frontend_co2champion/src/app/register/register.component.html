@@ -37,7 +37,7 @@
             id="company_uid"
             class="form-control"
             formControlName="company_uid"
-            placeholder="Enter company UID (uppercase letters & digits)"
+            placeholder="8-15 uppercase letters/digits (e.g. ATU12345678)"
           />
           <div *ngIf="isFieldInvalid('company_uid')" class="text-danger small mt-1">
             {{ getErrorMessage('company_uid') }}
@@ -87,7 +87,7 @@
             id="rep_first_name"
             class="form-control"
             formControlName="rep_first_name"
-            placeholder="Enter representative's first name"
+            placeholder="Letters only (2-50 characters)"
           />
           <div *ngIf="isFieldInvalid('rep_first_name')" class="text-danger small mt-1">
             {{ getErrorMessage('rep_first_name') }}
@@ -102,7 +102,7 @@
             id="rep_last_name"
             class="form-control"
             formControlName="rep_last_name"
-            placeholder="Enter representative's last name"
+            placeholder="Letters only (2-50 characters)"
           />
           <div *ngIf="isFieldInvalid('rep_last_name')" class="text-danger small mt-1">
             {{ getErrorMessage('rep_last_name') }}
@@ -117,7 +117,7 @@
             id="username"
             class="form-control"
             formControlName="username"
-            placeholder="Enter a unique username"
+            placeholder="Lowercase letters & numbers only (e.g. john123)"
           />
           <div *ngIf="isFieldInvalid('username')" class="text-danger small mt-1">
             {{ getErrorMessage('username') }}
@@ -151,7 +151,7 @@
             id="password"
             class="form-control"
             formControlName="password"
-            placeholder="At least 8 chars, 1 uppercase, 1 lowercase, 1 digit, 1 special char"
+            placeholder="Minimum 8 characters with mix of letters, numbers & symbols"
           />
           <div *ngIf="isFieldInvalid('password')" class="text-danger small mt-1">
             {{ getErrorMessage('password') }}
@@ -175,7 +175,13 @@
 
         <!-- Submit Button & Back to Login -->
         <div class="d-grid gap-2 mt-4">
-          <button type="submit" class="btn btn-primary">Register</button>
+          <button
+  type="submit"
+  class="btn btn-primary"
+  [disabled]="registerFormGroup.invalid || registerFormGroup.pending"
+>
+  Register
+</button>
           <button
             type="button"
             class="btn btn-secondary"
