@@ -15,6 +15,7 @@ export class SetGoalComponent implements OnInit {
   goalFormGroup: FormGroup;
   currentGoal: GoalModel | null = null;
   isGoalSet: boolean = false;
+  showConfirmation: boolean = false;
 
   constructor(private goalService: GoalService) {
     this.goalFormGroup = new FormGroup({
@@ -65,83 +66,64 @@ export class SetGoalComponent implements OnInit {
     });
   }
 
-  // Validator: Target Emissions mindestens 20% kleiner als Start Emissions
+  // Bestätigungsdialog-Handling
+  onSubmitAttempt(event: Event): void {
+    event.preventDefault();
+
+    if (this.isGoalSet) {
+      this.showConfirmation = true;
+    } else {
+      this.onSubmit();
+    }
+  }
+
+  confirmUpdate(): void {
+    this.showConfirmation = false;
+    this.onSubmit();
+  }
+
+  cancelUpdate(): void {
+    this.showConfirmation = false;
+  }
+
+  // Validatoren (unverändert)
   private targetGreaterThanStartValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const target = control.value;
       const start = this.goalFormGroup?.get('start_emissions')?.value;
-
       if (start == null || target == null) return null;
-
-      if (target > start * 0.8) {
-        return { targetTooHigh: true };
-      }
+      if (target > start * 0.8) return { targetTooHigh: true };
       return null;
     };
   }
 
-  // Validator: Start Date nach 1990 und nicht in der Zukunft
   private startDateValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const inputDate = new Date(control.value);
       const today = new Date();
       const minDate = new Date('1990-01-01');
-
-      if (isNaN(inputDate.getTime())) {
-        return { invalidStartDate: true };
-      }
-
-      if (inputDate < minDate) {
-        return { invalidStartDateBefore1990: true };
-      }
-
-      if (inputDate > today) {
-        return { invalidStartDateFuture: true };
-      }
-
+      if (isNaN(inputDate.getTime())) return { invalidStartDate: true };
+      if (inputDate < minDate) return { invalidStartDateBefore1990: true };
+      if (inputDate > today) return { invalidStartDateFuture: true };
       return null;
     };
   }
 
-  // Validator: Deadline vor 2150, in der Zukunft, und mindestens 6 Monate nach Start Date
   private deadlineValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const deadlineDate = new Date(control.value);
       const today = new Date();
-      const maxDate = new Date('2149-12-31'); // Vor 2150
-
+      const maxDate = new Date('2149-12-31');
       const startDateControl = this.goalFormGroup?.get('start_date');
-      if (!startDateControl) {
-        return null;
-      }
-
+      if (!startDateControl) return null;
       const startDate = new Date(startDateControl.value);
-
-      if (isNaN(deadlineDate.getTime())) {
-        return { invalidDeadline: true };
-      }
-
-      if (deadlineDate <= today) {
-        return { deadlineNotInFuture: true };
-      }
-
-      if (deadlineDate > maxDate) {
-        return { deadlineAfter2150: true };
-      }
-
-      // Mindestens 6 Monate nach Start Date
+      if (isNaN(deadlineDate.getTime())) return { invalidDeadline: true };
+      if (deadlineDate <= today) return { deadlineNotInFuture: true };
+      if (deadlineDate > maxDate) return { deadlineAfter2150: true };
       const sixMonthsAfterStart = new Date(startDate);
       sixMonthsAfterStart.setMonth(sixMonthsAfterStart.getMonth() + 6);
-
-      if (deadlineDate < sixMonthsAfterStart) {
-        return { deadlineLessThan6Months: true };
-      }
-
-      // Deadline muss nach Start Date sein
-      if (deadlineDate <= startDate) {
-        return { deadlineBeforeStartDate: true };
-      }
-
+      if (deadlineDate < sixMonthsAfterStart) return { deadlineLessThan6Months: true };
+      if (deadlineDate <= startDate) return { deadlineBeforeStartDate: true };
       return null;
     };
   }
@@ -154,24 +136,24 @@ export class SetGoalComponent implements OnInit {
         target_emissions: this.goalFormGroup.value.target_emissions!.toString(),
       };
 
+      const handleError = (err: any) => {
+        if (err.error) {
+          const errorMessages = Object.values(err.error).flat().join(' ');
+          alert(`Failed: ${errorMessages}`);
+        } else {
+          alert(`Error: ${err.message}`);
+        }
+      };
+
       if (this.isGoalSet && this.currentGoal) {
-        // Update Goal
         this.goalService.updateGoal(this.currentGoal.id, goalData).subscribe({
           next: () => {
             alert('Goal updated successfully!');
             this.loadCurrentGoal();
           },
-          error: (err) => {
-            if (err.error) {
-              const errorMessages = Object.values(err.error).flat().join(' ');
-              alert('Failed to update goal: ' + errorMessages);
-            } else {
-              alert('Failed to update goal: ' + err.message);
-            }
-          },
+          error: handleError
         });
       } else {
-        // Create Goal
         this.goalService.createGoal(goalData).subscribe({
           next: (response) => {
             alert('Goal created successfully!');
@@ -179,14 +161,7 @@ export class SetGoalComponent implements OnInit {
             this.currentGoal = response;
             this.loadCurrentGoal();
           },
-          error: (err) => {
-            if (err.error) {
-              const errorMessages = Object.values(err.error).flat().join(' ');
-              alert('Failed to create goal: ' + errorMessages);
-            } else {
-              alert('Failed to create goal: ' + err.message);
-            }
-          },
+          error: handleError
         });
       }
     } else {

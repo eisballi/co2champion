@@ -1,6 +1,18 @@
 <div class="container mt-5">
   <h1>Set or Change Your CO₂ Goal</h1>
 
+  <!-- Bestätigungs-Dialog -->
+  <div *ngIf="showConfirmation" class="confirmation-overlay">
+    <div class="confirmation-dialog">
+      <h3>⚠️ Warning!</h3>
+      <p>Updating your goal will delete all existing reports associated with the old goal. Are you sure you want to continue?</p>
+      <div class="dialog-buttons">
+        <button type="button" class="btn btn-danger" (click)="confirmUpdate()">Yes, Update Anyway</button>
+        <button type="button" class="btn btn-secondary" (click)="cancelUpdate()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <form [formGroup]="goalFormGroup" (ngSubmit)="onSubmit()" novalidate>
     <!-- Start Emissions -->
     <div class="form-group mb-3">
@@ -106,7 +118,7 @@
     </div>
 
     <!-- Submit Button -->
-    <button type="submit" class="btn btn-primary">
+    <button type="submit" class="btn btn-primary" (click)="onSubmitAttempt($event)">
       {{ isGoalSet ? 'Update Goal' : 'Set Goal' }}
     </button>
   </form>
