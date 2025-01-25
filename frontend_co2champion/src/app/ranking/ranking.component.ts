@@ -46,10 +46,9 @@ export class RankingComponent implements OnInit {
   fetchUserCompany(): void {
     this.rankingService.getUserCompany().subscribe({
       next: (data) => {
-        // Falls dein Endpunkt ein Array zurückgibt (z. B. [ {id:..., current_rank: ...} ] )
-        // nimm das erste Element:
+        
         const company = data[0];
-        // company.current_rank ist vom Server vorausgefüllt:
+        
         this.userCompany = {
           ...company,
           rank: company.current_rank  
@@ -82,7 +81,7 @@ export class RankingComponent implements OnInit {
   isUserCompanyNotInTop10(): boolean {
     return this.isLoggedIn && 
            this.userCompany && 
-           this.userCompany.id && // Add this check
+           this.userCompany.id && 
            this.top10Companies && 
            this.top10Companies.length > 0 &&
            !this.top10Companies.some(c => c.id === this.userCompany.id);

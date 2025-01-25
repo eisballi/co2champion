@@ -97,8 +97,8 @@ class Goal(models.Model):
             raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
-        # Stellen Sie sicher, dass clean immer vor dem Speichern aufgerufen wird
-        self.full_clean()  # Ruft die clean-Methode auf
+    
+        self.full_clean() 
         super().save(*args, **kwargs)
 
 

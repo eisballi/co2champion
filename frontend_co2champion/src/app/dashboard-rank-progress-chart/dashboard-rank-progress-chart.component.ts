@@ -3,7 +3,7 @@ import * as echarts from 'echarts';
 
 @Component({
   selector: 'app-rank-line-chart',
-  standalone: true, // Standalone-Komponente
+  standalone: true, 
   templateUrl: './dashboard-rank-progress-chart.component.html',
   styleUrls: ['./dashboard-rank-progress-chart.component.scss'],
 })

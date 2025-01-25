@@ -27,7 +27,7 @@ import { UserService } from '../services/user.service';
 export class RegisterComponent implements OnInit {
 
   registerFormGroup!: FormGroup;
-  submitted = false;  // kannst du nutzen, falls du etwas anderes daraus ableiten willst
+  submitted = false;  
 
   constructor(
     private fb: FormBuilder,
@@ -43,7 +43,7 @@ export class RegisterComponent implements OnInit {
           '',
           [
             Validators.required,
-            // Beispielsweise nur Buchstaben, Zahlen, Leerzeichen, & (2-50 Zeichen)
+            
             Validators.pattern('^(?=.*[^\\s].*[^\\s])[A-Za-z0-9 &]{2,50}$')
           ]
         ],

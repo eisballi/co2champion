@@ -56,7 +56,7 @@ export class DateComponent
     private destroyRef: DestroyRef,
   ) {}
   ngAfterViewInit(): void {
-    // We need this so the initial value is also formatted correctly
+    
     this.date.setValue(this.date.value);
   }
 

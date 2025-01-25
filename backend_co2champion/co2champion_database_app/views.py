@@ -123,7 +123,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Die Annotation identisch wie im RankViewSet
+        
         return (
             self.queryset
             .annotate(
@@ -197,7 +197,7 @@ class GoalViewSet(viewsets.ModelViewSet):
                 self.perform_update(serializer)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                serializer.save(company=company)  # ✅ Company explizit übergeben!
+                serializer.save(company=company)  
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

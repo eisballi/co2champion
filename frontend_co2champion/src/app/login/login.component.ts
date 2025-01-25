@@ -63,7 +63,7 @@ export class LoginComponent implements OnInit {
   }
 
   navigateToRegister(): void {
-    this.router.navigate(['/register']); // Leitet zur Registrierungsseite weiter
+    this.router.navigate(['/register']);
   }
 
   navigateToRanking(): void {

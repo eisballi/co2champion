@@ -53,14 +53,14 @@ export class RankingChartComponent implements OnInit, OnChanges {
           fontSize: 18,
         },
       },
-      // Keine spezielle Tooltip-Formatter => zeigt die vollen Dezimalwerte
+      
       tooltip: {
         trigger: 'axis',
       },
       toolbox: {
         feature: {
           saveAsImage: { show: true },
-          dataZoom: { show: true },
+          dataZoom: { show: false },
         },
       },
       xAxis: {
@@ -70,7 +70,7 @@ export class RankingChartComponent implements OnInit, OnChanges {
           lineStyle: { color: '#fff' },
         },
       },
-      // Keine Rundung in axisLabel => Achse zeigt Dezimalwerte
+      
       yAxis: {
         type: 'value',
         name: 'Score',
@@ -92,18 +92,18 @@ export class RankingChartComponent implements OnInit, OnChanges {
         {
           data: chartData,
           type: 'bar',
-          // Nur das Label auf dem Balken runden wir
+          
           label: {
             show: true,
             position: 'top',
             color: '#fff',
             formatter: (param: any) => {
-              // param.data.value ist der Wert des Balkens
+              
               const rawVal = param?.data?.value ?? 0;
               const numericVal = typeof rawVal === 'number'
                 ? rawVal
                 : parseFloat(String(rawVal)) || 0;
-              // Nur hier runden wir
+              
               return Math.round(numericVal).toString();
             },
           },
@@ -114,9 +114,9 @@ export class RankingChartComponent implements OnInit, OnChanges {
             ],
             label: {
               formatter: (param: any): string => {
-                // param.value => der ungefilterte Wert
+                
                 const rawVal = param?.value ?? 0;
-                // toNumber konvertieren & runden
+               
                 const numericVal = typeof rawVal === 'number'
                   ? rawVal
                   : parseFloat(String(rawVal)) || 0;
@@ -132,7 +132,7 @@ export class RankingChartComponent implements OnInit, OnChanges {
             },
             label: {
               formatter: (param: any): string => {
-                // param.value => der ungefilterte Durchschnittswert
+                
                 const rawVal = param?.value ?? 0;
                 const numericVal = typeof rawVal === 'number'
                   ? rawVal

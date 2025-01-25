@@ -8,7 +8,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { ActivatedRoute } from '@angular/router';
-import { ReportService } from '../services/report.service'; // Dein Service zum Abrufen und Bearbeiten von Reports
+import { ReportService } from '../services/report.service'; 
 import { DateComponent } from '../date/date.component';
 
 @Component({

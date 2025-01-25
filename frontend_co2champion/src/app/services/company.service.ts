@@ -7,7 +7,7 @@ export interface Company {
   UID: string;
   name: string;
   email: string;
-  password: string;        // NOTE: Storing password in plain text is generally unsafe!
+  password: string;        
   total_employees: number;
   total_income: number;
   current_rank: number;
@@ -18,7 +18,7 @@ export interface Company {
   providedIn: 'root'
 })
 export class CompanyService {
-  private baseUrl = '/api/company'; // Points to your Django ViewSet
+  private baseUrl = '/api/company'; 
 
   constructor(private http: HttpClient) {}
 

@@ -86,7 +86,7 @@ export class SetGoalComponent implements OnInit {
     this.showConfirmation = false;
   }
 
-  // Validatoren (unverändert)
+  // Validatoren 
   private targetGreaterThanStartValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const target = control.value;

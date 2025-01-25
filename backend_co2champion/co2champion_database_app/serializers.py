@@ -214,7 +214,7 @@ class RegisterSerializer(serializers.Serializer):
         # Firma anlegen und mit User verknüpfen
         company = Company.objects.create(
             name=company_name,
-            UID=company_uid,          # <--- Hier
+            UID=company_uid,         
             email=rep_email,
             user=user,
             total_employees=employee_size,

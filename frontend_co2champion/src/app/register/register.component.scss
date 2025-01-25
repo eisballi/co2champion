@@ -1,13 +1,12 @@
-// Hintergrund für die gesamte Seite
 .register-page {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 90vh; // Passt das Formular an die Bildschirmhöhe an
-  background-color: #ccffcc; // Gleiche grüne Hintergrundfarbe wie auf anderen Seiten
+  height: 90vh; 
+  background-color: #ccffcc; 
 }
 
-// Container für das Formular
+
 .register-form-container {
   width: 100%;
   max-width: 400px;
@@ -18,7 +17,7 @@
   text-align: center;
 }
 
-// Titel des Formulars
+
 .form-title {
   font-size: 1.5rem;
   font-weight: bold;
@@ -26,14 +25,14 @@
   color: #333;
 }
 
-// Formular-Stile
+
 .form {
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
 }
 
-// Eingabe-Felder
+
 .form-group {
   text-align: left;
 
@@ -53,16 +52,16 @@
     width: 100%;
   }
 
-  // Ausgegrautes Textfeld (disabled)
+
   .disabled-input {
-    background-color: #f5f5f5; /* Helles Grau */
-    color: #999; /* Graue Schrift */
-    border-color: #ddd; /* Hellgrauer Rahmen */
-    cursor: not-allowed; /* Zeigt an, dass es deaktiviert ist */
+    background-color: #f5f5f5; 
+    color: #999; 
+    border-color: #ddd; 
+    cursor: not-allowed;
   }
 }
 
-// Button
+
 .form-button {
   padding: 0.6rem;
   background-color: #007bff;

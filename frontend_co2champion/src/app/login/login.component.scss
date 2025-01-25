@@ -2,18 +2,18 @@ html,
 body {
   margin: 0;
   padding: 0;
-  overflow: hidden; // Verhindert Scrollen
-  height: 100%; // Nimmt die gesamte Höhe ein
+  overflow: hidden; 
+  height: 100%; 
 }
 
 .login-page {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 90vh; // Passt an Bildschirmgröße an
-    height: 100%; // Sicherstellen, dass kein zusätzlicher Raum entsteht
-    background-color: #ccffcc; // Gleiche grüne Hintergrundfarbe
-    overflow: hidden; // Verhindert Scrollen
+    min-height: 90vh; 
+    height: 100%; 
+    background-color: #ccffcc;
+    overflow: hidden; 
 }
 
 .login-form-container {

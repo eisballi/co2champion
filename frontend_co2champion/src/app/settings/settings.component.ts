@@ -69,7 +69,7 @@ export class SettingsComponent implements OnInit {
     this.loading = true;
     this.userService.getMyAccount().subscribe({
       next: (data: any) => {
-        // Entferne das E-Mail-Feld aus den gepatchten Daten, falls vorhanden
+        
         const { email, ...rest } = data;
         this.settingsForm.patchValue(rest);
         this.loading = false;
