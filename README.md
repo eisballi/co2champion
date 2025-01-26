@@ -26,16 +26,42 @@ The application aligns with the theme of **“Hope – who will turn the tide?�
 
 ## **Features**
 ### **Core Functionalities**
-- **Goal Management**: Set and update CO₂ reduction goals.
-- **CO₂ Reports**: Submit, edit, and delete CO₂ progress reports.
-- **Progress Visualization**: Graphical representation of progress toward CO₂ goals.
-- **Leaderboard Ranking**: Benchmark and compare progress with other companies.
-- **Historical Data**: Access to previous CO₂ reports for long-term trend analysis.
-- **Data Export**: Export CO₂ data in CSV format.
+- **Goal Management**  
+  Set and update CO₂ reduction goals with:
+  - Baseline emissions (≥50 tons/year)
+  - Target emissions (≥20% reduction from baseline)
+  - Deadline (6 months to 125 years in the future)
 
-### **Security and Compliance**
-- Secure registration and login via JWT authentication.
-- GDPR compliance: Protecting your personal data is a priority for us at CO2Champion. Detailed GDPR page in application.
+- **CO₂ Reporting**  
+  Submit, edit, and delete progress reports with:
+  - Titles (max 200 characters)
+  - Descriptions (max 800 characters)
+  - Reduced emissions (positive values ≤ baseline)
+  - Submission dates (between goal start and deadline)
+
+- **Data Visualization**  
+  Interactive dashboards showing:
+  - Progress timelines
+  - Reduction percentages
+  - Historical trends
+  - Company rankings
+
+- **Competitive Benchmarking**  
+  Leaderboard displaying:
+  - Top 10 companies
+  - User's company rank (if outside top 10)
+  - Global comparison metrics
+
+- **Data Export**  
+  Download CO₂ reports and goal data in CSV format.
+
+### **Security & Compliance**
+- 🔐 JWT authentication for all user actions
+- 🛡️ GDPR-compliant data handling:
+  - Self-service data access/modification
+  - Right to be forgotten implementation
+  - Encrypted sensitive data storage
+- ⚙️ Validation rules enforced at API and UI layers
 
 ---
 
@@ -106,51 +132,6 @@ In Django Admin:
 
 ### **Public Users**
 - View leaderboard and company progress.
-
----
-
-## **Application Functionality**
-### **1. Dashboard**
-- View CO₂ reduction graphs: timeline, progress percentage, histroy and rank.
-- Edit and delete reports.
-- Export data as CSV.
-
-### **2. Ranking**
-- View the top 10 companies on the leaderboard (+11th slot for the user’s company if not in top 10).
-- Compare your company’s progress with others globally.
-
-### **3. Reporting**
-- Add detailed CO₂ reduction reports.
-- Edit or delete previously submitted reports.
-
-### **4. Goal Management**
-- Set new CO₂ reduction goals with:
-  - Baseline emissions.
-  - Target emissions (at least 20% reduction).
-  - Deadline (6 months to 125 years in the future).
-
-### **5. Security**
-- Authentication and authorization for all restricted content.
-- Secure and GDPR-compliant data handling.
-
----
-
-## **Data Validity and Security**
-### **Validation Rules**
-- **CO₂ Goals**:
-  - Start emissions: At least 50 tons/year.
-  - Target emissions: At least 20% below start emissions.
-  - Deadline: Minimum 6 months in the future.
-
-- **Reports**:
-  - Titles: Max 200 characters.
-  - Descriptions: Max 800 characters.
-  - Reduced emissions: Positive and below start emissions.
-  - Submission dates: Between goal start date and deadline.
-
-### **GDPR Compliance**
-- Companies can:
-  - Access, modify, or delete their data.
 
 ---
 
