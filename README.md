@@ -40,9 +40,14 @@ The application aligns with the theme of **“Hope – who will turn the tide?�
 
 ## **Setup and Installation**
 ### **Requirements**
-- **Backend**: Python 3.9+, Django 4.1
-- **Frontend**: Angular 15+
-- **Database**: SQLite (can be switched to PostgreSQL for production)
+- **Backend**: Python 3.12.6, Django 5.1.2
+- **Frontend**: 
+    - Angular: 18.2.13
+    - Node.js: 22.11.0
+    - npm: 9.8.0
+    - TypeScript: 5.5.4
+    - RxJS: 7.8.1
+- **Database**: SQLite 3.45.3
 
 ### **Steps**
 1. **Clone the repository**:
