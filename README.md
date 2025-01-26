@@ -35,7 +35,7 @@ The application aligns with the theme of **“Hope – who will turn the tide?�
 
 ### **Security and Compliance**
 - Secure registration and login via JWT authentication.
-- GDPR compliance: GDPR page in application.
+- GDPR compliance: Protecting your personal data is a priority for us at CO2Champion. Detailed GDPR page in application.
 
 ---
 
