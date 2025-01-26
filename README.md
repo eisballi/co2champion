@@ -89,6 +89,7 @@ The application aligns with the theme of **“Hope – who will turn the tide?�
 7. **Access the app**:
    - Backend: [http://localhost:8000](http://localhost:8000)
    - Frontend: [http://localhost:4200](http://localhost:4200)
+   - Django Admin: [http://127.0.0.1:8000/admin] (http://127.0.0.1:8000/admin)
 
 ---
 
