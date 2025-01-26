@@ -13,6 +13,7 @@
 5. [Application Functionality](#application-functionality)
 6. [Data Validity and Security](#data-validity-and-security)
 7. [Contributors](#contributors)
+8. [Course and Lecturers](#course-and-lecturers)
 
 ---
 
@@ -160,4 +161,19 @@ In Django Admin:
 
 ---
 
-For questions or feedback, please contact us via the repository’s [GitHub Issues](https://github.com/eisballi/co2champion/issues). 
+## **Course and Lecturers**
+### **FH Joanneuem**
+- Bachelor Studiengang "Wirtschaftsinformatik" IMA, WINF
+- IMA22 im WS 2024/25
+### **Course Details**
+- **Course Name**: Web Application Development 2
+- **Semester**: WS 2024/2025
+- **Credits**: 5 ECTS
+
+### **Lecturers**
+#### **Karl Kreiner**
+#### **Stefan Krasser**
+
+---
+
+For questions or feedback, please contact us via the repository’s [GitHub Issues](https://github.com/eisballi/co2champion/issues).
