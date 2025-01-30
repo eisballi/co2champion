@@ -22,6 +22,21 @@
 
 The application aligns with the theme of **“Hope – who will turn the tide?”**, providing transparency and accountability in corporate carbon management to inspire sustainable practices.
 
+**Database**
+
+The database is included and comes pre-filled with test data for easier development and testing. The test data consists of:
+
+- Sample company accounts
+- Example CO₂ reduction goals
+- Mock reports for visualization and benchmarking
+
+**Credentials**
+- Users: user1-user20
+- PW: Password123!
+
+Django Admin
+- User: admin
+- PW: admin
 ---
 
 ## **Features**
